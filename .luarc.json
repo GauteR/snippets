@@ -1,0 +1,46 @@
+{
+  "$schema": "https://raw.githubusercontent.com/LuaLS/vscode-lua/master/setting/schema.json",
+  "runtime": {
+    "version": "Lua 5.1",
+    "builtin": {
+      "basic": "default",
+      "bit": "default",
+      "bit32": "default",
+      "coroutine": "default",
+      "debug": "default",
+      "io": "default",
+      "math": "default",
+      "os": "default",
+      "package": "default",
+      "string": "default",
+      "table": "default",
+      "utf8": "default"
+    }
+  },
+  "diagnostics": {
+    "globals": [
+      "Snippets",
+      "DEFAULT_CHAT_FRAME",
+      "GetNumMacros",
+      "GetMacroInfo",
+      "InCombatLockdown",
+      "CreateMacro",
+      "MAX_ACCOUNT_MACROS",
+      "UnitClass",
+      "UnitRace",
+      "CreateFrame",
+      "UIParent",
+      "UISpecialFrames",
+      "tinsert",
+      "SlashCmdList",
+      "SLASH_SNIPPETS1",
+      "GameFontHighlight",
+      "GameFontNormal",
+      "GameFontNormalSmall",
+      "GameFontHighlightSmall"
+    ]
+  },
+  "workspace": {
+    "checkThirdParty": false
+  }
+}

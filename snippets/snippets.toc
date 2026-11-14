@@ -1,0 +1,20 @@
+## Interface: 16001
+## Title: Snippets
+## Notes: Class-filtered macro snippet templates.
+## Author: Neema
+## Version: 1.0.0
+## DefaultState: enabled
+
+Config.lua
+SnippetDB.lua
+Data/WARRIOR.lua
+Data/PALADIN.lua
+Data/HUNTER.lua
+Data/ROGUE.lua
+Data/PRIEST.lua
+Data/SHAMAN.lua
+Data/MAGE.lua
+Data/WARLOCK.lua
+Data/DRUID.lua
+Core.lua
+UI/Window.lua
