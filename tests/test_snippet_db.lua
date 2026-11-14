@@ -145,6 +145,58 @@ assert_true(byId ~= nil, "GetById finds snippet")
 assert_eq(byId.name, "Battle Shout", "GetById returns correct snippet")
 assert_true(Snippets.DB:GetById("WARRIOR", "missing") == nil, "GetById returns nil for missing id")
 
+-- Race conditionals: {IF:RACE=text|OTHER=text}
+local conditional = "/cast Charge\n{IF:DWARF=/cast Stoneform|GNOME=/cast Escape Artist}\n/startattack"
+
+assert_eq(
+  Snippets.DB:ExpandConditionals(conditional, "Dwarf"),
+  "/cast Charge\n/cast Stoneform\n/startattack",
+  "ExpandConditionals picks DWARF branch"
+)
+assert_eq(
+  Snippets.DB:ExpandConditionals(conditional, "GNOME"),
+  "/cast Charge\n/cast Escape Artist\n/startattack",
+  "ExpandConditionals picks GNOME branch case-insensitively"
+)
+assert_eq(
+  Snippets.DB:ExpandConditionals(conditional, "Orc"),
+  "/cast Charge\n/startattack",
+  "ExpandConditionals removes block when race does not match"
+)
+assert_eq(
+  Snippets.DB:ExpandConditionals(
+    "{IF:ORC=/cast Blood Fury|TROLL=/cast Berserking}",
+    "Scourge"
+  ),
+  "",
+  "ExpandConditionals returns empty when only unmatched branches exist"
+)
+assert_eq(
+  Snippets.DB:ExpandConditionals(
+    "{IF:SCOURGE=/cast Will of the Forsaken}",
+    "Scourge"
+  ),
+  "/cast Will of the Forsaken",
+  "ExpandConditionals matches Scourge undead race token"
+)
+assert_eq(
+  Snippets.DB:ExpandConditionals("{IF:ORC=/cast Blood Fury\\n/startattack}", "Orc"),
+  "/cast Blood Fury\n/startattack",
+  "ExpandConditionals expands \\n inside branch values"
+)
+
+local multi = "{IF:DWARF=/cast Stoneform}{IF:GNOME=/cast Escape Artist}"
+assert_eq(
+  Snippets.DB:ExpandConditionals(multi, "Dwarf"),
+  "/cast Stoneform",
+  "ExpandConditionals resolves multiple blocks independently"
+)
+assert_eq(
+  Snippets.DB:ExpandConditionals("{IF:DWARF =/cast Stoneform}", "Dwarf"),
+  "/cast Stoneform",
+  "ExpandConditionals trims spaces around race tokens"
+)
+
 if failures > 0 then
   print(string.format("\n%d test(s) failed", failures))
   os.exit(1)

@@ -5,6 +5,17 @@ Snippets.DB = Snippets.DB or {}
 local db = Snippets.DB
 db.byClass = db.byClass or {}
 
+local function normalizeToken(token)
+  if type(token) ~= "string" or token == "" then
+    return nil
+  end
+  token = string.match(token, "^%s*(.-)%s*$") or token
+  if token == "" then
+    return nil
+  end
+  return string.upper(token)
+end
+
 -- Register one snippet under a class file token (e.g. "WARRIOR").
 function db:Register(classFile, snippet)
   if type(classFile) ~= "string" or classFile == "" then
@@ -56,6 +67,34 @@ function db:GetById(classFile, snippetId)
     end
   end
   return nil
+end
+
+-- Resolve race conditionals in a template body.
+-- Syntax: {IF:DWARF=/cast Stoneform|GNOME=/cast Escape Artist}
+-- Matching race token (UnitRace file, uppercased) is substituted; no match removes the block.
+-- Use \n inside a branch value for a line break.
+function db:ExpandConditionals(body, raceFile)
+  body = body or ""
+  local raceKey = normalizeToken(raceFile) or ""
+
+  local expanded = string.gsub(body, "{IF:([^{}]*)}", function(inner)
+    local chosen = ""
+    for branch in string.gmatch(inner .. "|", "([^|]*)|") do
+      local raceToken, value = string.match(branch, "^%s*([^=]+)%s*=(.*)$")
+      if raceToken and normalizeToken(raceToken) == raceKey then
+        chosen = value or ""
+        break
+      end
+    end
+    chosen = string.gsub(chosen, "\\n", "\n")
+    return chosen
+  end)
+
+  -- Remove blank lines left when a block expands to empty.
+  expanded = string.gsub(expanded, "\n\n+", "\n")
+  expanded = string.gsub(expanded, "^\n+", "")
+  expanded = string.gsub(expanded, "\n+$", "")
+  return expanded
 end
 
 -- Macro bodies are capped at 255 characters by the client.
