@@ -29,7 +29,7 @@ function UI:Initialize()
 
   frame.classLabel = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
   frame.classLabel:SetPoint("TOPLEFT", 16, -32)
-  frame.classLabel:SetText("Class:")
+  frame.classLabel:SetText("Class / Race:")
 
   frame.listLabel = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
   frame.listLabel:SetPoint("TOPLEFT", 16, -54)
@@ -47,7 +47,7 @@ function UI:Initialize()
 
   frame.previewLabel = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
   frame.previewLabel:SetPoint("TOPLEFT", scrollFrame, "BOTTOMLEFT", 0, -12)
-  frame.previewLabel:SetText("Preview (editable before create)")
+  frame.previewLabel:SetText("Preview (race conditionals expanded; editable)")
 
   local preview = CreateFrame("EditBox", "SnippetsPreviewBox", frame)
   preview:SetMultiLine(true)
@@ -110,7 +110,8 @@ function UI:SelectIndex(index)
   self.selectedIndex = index
   local snippet = self.snippets[index]
   if snippet and self.preview then
-    self.preview:SetText(snippet.body or "")
+    -- Show the body after {IF:...} expansion for the current character race.
+    self.preview:SetText(Snippets:ExpandBodyForPlayer(snippet.body or ""))
   elseif self.preview then
     self.preview:SetText("")
   end
@@ -158,8 +159,11 @@ function UI:Refresh()
   end
 
   local classFile = Snippets:GetPlayerClassFile()
-  self.frame.classLabel:SetText("Class: " .. (classFile or "UNKNOWN"))
-  self.snippets = Snippets.DB:GetForClass(classFile)
+  local raceFile = Snippets:GetPlayerRaceFile()
+  self.frame.classLabel:SetText(
+    string.format("Class / Race: %s / %s", classFile or "UNKNOWN", raceFile or "UNKNOWN")
+  )
+  self.snippets = Snippets:GetSnippetsForPlayer()
   self:EnsureRows(#self.snippets)
 
   for i, row in ipairs(self.rows) do

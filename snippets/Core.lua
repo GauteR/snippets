@@ -35,6 +35,11 @@ function Snippets:CollectExistingMacroNames()
   return names
 end
 
+-- Expand {IF:...} race conditionals for the logged-in character.
+function Snippets:ExpandBodyForPlayer(body)
+  return self.DB:ExpandConditionals(body, self:GetPlayerRaceFile())
+end
+
 -- Create a Blizzard macro from a snippet table. Returns macroId or nil, errorMessage.
 function Snippets:CreateMacroFromSnippet(snippet)
   if InCombatLockdown and InCombatLockdown() then
@@ -44,7 +49,9 @@ function Snippets:CreateMacroFromSnippet(snippet)
     return nil, "No snippet selected."
   end
 
-  local body = self.DB:ClampBody(snippet.body)
+  -- Preview text may already be expanded; ExpandConditionals is idempotent without {IF:} blocks.
+  local body = self:ExpandBodyForPlayer(snippet.body)
+  body = self.DB:ClampBody(body)
   if body == "" then
     return nil, "Snippet body is empty."
   end
@@ -68,6 +75,16 @@ end
 function Snippets:GetPlayerClassFile()
   local _, classFile = UnitClass("player")
   return classFile
+end
+
+-- Race file token from UnitRace (Undead characters return "Scourge").
+function Snippets:GetPlayerRaceFile()
+  local _, raceFile = UnitRace("player")
+  return raceFile
+end
+
+function Snippets:GetSnippetsForPlayer()
+  return self.DB:GetForClass(self:GetPlayerClassFile())
 end
 
 function Snippets:IsEnabled()
