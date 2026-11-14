@@ -15,9 +15,10 @@ Open a browser with `/snippets`, pick a template for your current class, and cli
 
 - Template database of macro snippets, one data file per class
 - List filtered automatically to the logged-in character’s class (`UnitClass`)
-- Preview pane for the selected macro body (including multiline)
+- Race conditionals in template bodies (`{IF:…}`) expanded from `UnitRace`
+- Preview pane shows the expanded macro (editable before create)
 - **Create Macro** uses `CreateMacro` (character macros by default)
-- Feature flag to disable the UI without removing the addon
+- Feature flag (`ENABLED`) to disable the whole UI without removing the addon
 - Pure Lua unit tests for the snippet registry helpers
 
 ## Install
@@ -34,8 +35,8 @@ Open a browser with `/snippets`, pick a template for your current class, and cli
 
 1. Log in on the character you want macros for.
 2. Run `/snippets`.
-3. Select a snippet in the list (only that class’s templates are shown).
-4. Check the **Preview** pane (you can edit the text before creating).
+3. Select a snippet in the list (class templates only).
+4. Check the **Preview** pane — `{IF:…}` blocks are already expanded for your race (you can still edit).
 5. Click **Create Macro** — the macro body is taken from the preview contents.
 
 The new macro appears in the normal Blizzard macro UI. Creation is blocked while in combat. If a name is already taken, a numeric suffix is added (`Charge`, `Charge 2`, …). Names are limited to 16 characters; bodies to 255 characters (newlines count).
@@ -99,6 +100,24 @@ Examples ship in `Data/MAGE.lua` (long string) and `Data/HUNTER.lua` (`\n`).
 
 `WARRIOR`, `PALADIN`, `HUNTER`, `ROGUE`, `PRIEST`, `SHAMAN`, `MAGE`, `WARLOCK`, `DRUID` — each with a few placeholder templates. Replace them with your own macros.
 
+### Race conditionals (`{IF:…}`)
+
+Embed race-specific lines inside any class template. Tokens match `UnitRace` file values (`Scourge` = Undead):
+
+```lua
+body = [[
+/cast Charge
+{IF:DWARF=/cast Stoneform|GNOME=/cast Escape Artist|ORC=/cast Blood Fury}
+]]
+```
+
+- On a Dwarf this becomes `/cast Charge` + `/cast Stoneform`.
+- On a race with no matching branch, the whole `{IF:…}` block is removed.
+- Use `\n` inside a branch value for an extra line break.
+- Preview and **Create Macro** both expand against the current character race.
+
+See `Data/WARRIOR.lua` (`warrior_charge`) for a fuller example.
+
 ## Project layout
 
 ```
@@ -108,7 +127,7 @@ snippets/                 # Addon folder (copy this to Interface/AddOns)
   SnippetDB.lua
   Core.lua
   UI/Window.lua
-  Data/*.lua              # Per-class templates
+  Data/*.lua              # Per-class templates (may include {IF:...} blocks)
 docs/INSTALL.md           # Short install guide
 tests/test_snippet_db.lua # Unit tests (no WoW client required)
 .luarc.json               # LuaLS WoW globals
@@ -120,7 +139,8 @@ README.md
 - Snippet data is stored in Lua files on purpose. Forever does not load SavedVariables after a cold start.
 - Macros created with **Create Macro** do persist across client restarts.
 - `## Interface: 16001` matches the Forever client; do not treat this as Classic Era `115xx` tooling.
-- Forever lacks Retail specializations the same way Retail does; filtering uses class file tokens only, not spec.
+- Forever lacks Retail specializations the same way Retail does; class filtering uses class file tokens only, not spec.
+- Race conditionals use `UnitRace` file tokens (`Human`, `Orc`, `Scourge`, …).
 
 ## Editor (LuaLS)
 
@@ -134,13 +154,14 @@ Requires a local Lua interpreter (5.1+ / 5.4 is fine). From the repository root:
 lua tests/test_snippet_db.lua
 ```
 
-Coverage includes class filtering, unique macro names (including the 16-character limit), body clamping to 255 characters, and multiline body handling.
+Coverage includes class filtering, unique macro names (including the 16-character limit), body clamping to 255 characters, multiline bodies, and `{IF:…}` race expansion.
 
 ## QA checklist
 
 - [ ] Addon loads on Forever (`Interface` 16001).
 - [ ] `/snippets` opens the window when `ENABLED = true`.
-- [ ] List matches the current character class only.
+- [ ] List matches the current character class.
+- [ ] Preview expands `{IF:…}` for the current race and drops unmatched branches.
 - [ ] Preview shows single-line and multiline bodies.
 - [ ] **Create Macro** creates a usable character macro.
 - [ ] Creating the same snippet twice gets a unique name suffix.

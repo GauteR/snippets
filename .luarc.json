@@ -27,6 +27,7 @@
       "CreateMacro",
       "MAX_ACCOUNT_MACROS",
       "UnitClass",
+      "UnitRace",
       "CreateFrame",
       "UIParent",
       "UISpecialFrames",

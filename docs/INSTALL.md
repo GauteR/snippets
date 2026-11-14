@@ -49,6 +49,15 @@ body = [[
 body = "/stopattack\n/cast Feign Death"
 ```
 
+Race conditionals — expanded from the character’s `UnitRace` file token:
+
+```lua
+body = [[
+/cast Charge
+{IF:DWARF=/cast Stoneform|GNOME=/cast Escape Artist}
+]]
+```
+
 - `id` must be unique within the class file.
 - Macro body is limited to 255 characters (newlines count).
 - Macro name is limited to 16 characters (longer names are truncated; collisions get a numeric suffix).
