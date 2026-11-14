@@ -24,5 +24,6 @@ Snippets.DB:Register("MAGE", {
 /stopcasting
 /cast Counterspell
 ]],
-  note = "Multiline example (long string)",
+  category = "pvp",
+  note = "PvP multiline example (long string)",
 })

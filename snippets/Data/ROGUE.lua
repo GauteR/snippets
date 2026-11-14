@@ -4,6 +4,7 @@ Snippets.DB:Register("ROGUE", {
   name = "Sinister Strike",
   icon = "Spell_Shadow_RitualOfSacrifice",
   body = "/cast Sinister Strike",
+  category = "general",
   note = "Example template",
 })
 
@@ -12,7 +13,8 @@ Snippets.DB:Register("ROGUE", {
   name = "Eviscerate",
   icon = "Ability_Rogue_Eviscerate",
   body = "/cast Eviscerate",
-  note = "Example template",
+  category = "pve",
+  note = "PvE example template",
 })
 
 Snippets.DB:Register("ROGUE", {
@@ -20,5 +22,6 @@ Snippets.DB:Register("ROGUE", {
   name = "Sprint",
   icon = "Ability_Rogue_Sprint",
   body = "/cast Sprint",
-  note = "Example template",
+  category = "pvp",
+  note = "PvP example template",
 })

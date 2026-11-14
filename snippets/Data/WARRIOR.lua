@@ -7,6 +7,7 @@ Snippets.DB:Register("WARRIOR", {
 /cast Charge
 {IF:DWARF=/cast Stoneform|GNOME=/cast Escape Artist|ORC=/cast Blood Fury|TROLL=/cast Berserking|TAUREN=/cast War Stomp|SCOURGE=/cast Will of the Forsaken|NIGHTELF=/cast Shadowmeld|HUMAN=/cast Perception}
 ]],
+  category = "general",
   note = "Example with race {IF:...} conditional",
 })
 
@@ -15,6 +16,7 @@ Snippets.DB:Register("WARRIOR", {
   name = "Battle Shout",
   icon = "Ability_Warrior_BattleShout",
   body = "/cast Battle Shout",
+  category = "general",
   note = "Example template",
 })
 
@@ -23,5 +25,6 @@ Snippets.DB:Register("WARRIOR", {
   name = "Shield Block",
   icon = "Ability_Defend",
   body = "/cast Shield Block",
-  note = "Example template",
+  category = "pve",
+  note = "PvE example template",
 })
