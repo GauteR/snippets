@@ -83,8 +83,8 @@ function Snippets:GetPlayerRaceFile()
   return raceFile
 end
 
-function Snippets:GetSnippetsForPlayer()
-  return self.DB:GetForClass(self:GetPlayerClassFile())
+function Snippets:GetSnippetsForPlayer(filterMode)
+  return self.DB:GetForClassAndFilter(self:GetPlayerClassFile(), filterMode)
 end
 
 function Snippets:IsEnabled()

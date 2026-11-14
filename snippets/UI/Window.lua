@@ -31,14 +31,30 @@ function UI:Initialize()
   frame.classLabel:SetPoint("TOPLEFT", 16, -32)
   frame.classLabel:SetText("Class / Race:")
 
+  local pveButton = CreateFrame("Button", "SnippetsFilterPveButton", frame, "UIPanelButtonTemplate")
+  pveButton:SetSize(60, 22)
+  pveButton:SetPoint("TOPLEFT", 16, -52)
+  pveButton:SetText("PvE")
+  pveButton:SetScript("OnClick", function()
+    UI:SetFilter("pve")
+  end)
+
+  local pvpButton = CreateFrame("Button", "SnippetsFilterPvpButton", frame, "UIPanelButtonTemplate")
+  pvpButton:SetSize(60, 22)
+  pvpButton:SetPoint("LEFT", pveButton, "RIGHT", 8, 0)
+  pvpButton:SetText("PvP")
+  pvpButton:SetScript("OnClick", function()
+    UI:SetFilter("pvp")
+  end)
+
   frame.listLabel = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-  frame.listLabel:SetPoint("TOPLEFT", 16, -54)
+  frame.listLabel:SetPoint("TOPLEFT", 16, -78)
   frame.listLabel:SetText("Snippets")
 
   -- Explicit list height so the preview pane keeps usable space for multiline bodies.
   local scrollFrame = CreateFrame("ScrollFrame", "SnippetsScrollFrame", frame, "UIPanelScrollFrameTemplate")
-  scrollFrame:SetPoint("TOPLEFT", 16, -70)
-  scrollFrame:SetPoint("TOPRIGHT", -36, -70)
+  scrollFrame:SetPoint("TOPLEFT", 16, -94)
+  scrollFrame:SetPoint("TOPRIGHT", -36, -94)
   scrollFrame:SetHeight(LIST_HEIGHT)
 
   local content = CreateFrame("Frame", "SnippetsScrollChild", scrollFrame)
@@ -91,13 +107,42 @@ function UI:Initialize()
   self.scrollFrame = scrollFrame
   self.content = content
   self.preview = preview
+  self.pveButton = pveButton
+  self.pvpButton = pvpButton
   self.rows = {}
   self.selectedIndex = nil
   self.snippets = {}
+  local defaultFilter = (Snippets.Config and Snippets.Config.DEFAULT_FILTER) or "pve"
+  if defaultFilter ~= "pve" and defaultFilter ~= "pvp" then
+    defaultFilter = "pve"
+  end
+  self.filterMode = defaultFilter
 
   frame:SetScript("OnShow", function()
     UI:Refresh()
   end)
+end
+
+function UI:SetFilter(filterMode)
+  if filterMode ~= "pve" and filterMode ~= "pvp" then
+    filterMode = "pve"
+  end
+  self.filterMode = filterMode
+  self:Refresh()
+end
+
+function UI:UpdateFilterButtons()
+  if not self.pveButton or not self.pvpButton then
+    return
+  end
+  -- Dim the inactive filter so the active mode is obvious.
+  if self.filterMode == "pvp" then
+    self.pvpButton:SetAlpha(1)
+    self.pveButton:SetAlpha(0.55)
+  else
+    self.pveButton:SetAlpha(1)
+    self.pvpButton:SetAlpha(0.55)
+  end
 end
 
 function UI:SetStatus(message)
@@ -163,7 +208,9 @@ function UI:Refresh()
   self.frame.classLabel:SetText(
     string.format("Class / Race: %s / %s", classFile or "UNKNOWN", raceFile or "UNKNOWN")
   )
-  self.snippets = Snippets:GetSnippetsForPlayer()
+  self.filterMode = self.filterMode or "pve"
+  self:UpdateFilterButtons()
+  self.snippets = Snippets:GetSnippetsForPlayer(self.filterMode)
   self:EnsureRows(#self.snippets)
 
   for i, row in ipairs(self.rows) do
