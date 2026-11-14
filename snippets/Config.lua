@@ -10,4 +10,6 @@ Snippets.Config = {
   MAX_NAME_LENGTH = 16,
   ADDON_NAME = "Snippets",
   SLASH_COMMAND = "/snippets",
+  -- Active list filter on login: "pve" or "pvp".
+  DEFAULT_FILTER = "pve",
 }

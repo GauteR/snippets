@@ -16,6 +16,37 @@ local function normalizeToken(token)
   return string.upper(token)
 end
 
+-- Allowed categories: general (shown in both filters), pve, pvp.
+local VALID_CATEGORIES = {
+  general = true,
+  pve = true,
+  pvp = true,
+}
+
+function db:NormalizeCategory(category)
+  if type(category) ~= "string" or category == "" then
+    return "general"
+  end
+  category = string.lower(string.match(category, "^%s*(.-)%s*$") or category)
+  if not VALID_CATEGORIES[category] then
+    return "general"
+  end
+  return category
+end
+
+-- Filter mode is "pve" or "pvp". General snippets match both.
+function db:MatchesFilter(category, filterMode)
+  local normalizedCategory = self:NormalizeCategory(category)
+  local normalizedFilter = self:NormalizeCategory(filterMode)
+  if normalizedFilter ~= "pve" and normalizedFilter ~= "pvp" then
+    normalizedFilter = "pve"
+  end
+  if normalizedCategory == "general" then
+    return true
+  end
+  return normalizedCategory == normalizedFilter
+end
+
 -- Register one snippet under a class file token (e.g. "WARRIOR").
 function db:Register(classFile, snippet)
   if type(classFile) ~= "string" or classFile == "" then
@@ -37,6 +68,7 @@ function db:Register(classFile, snippet)
     icon = snippet.icon or "INV_Misc_QuestionMark",
     body = snippet.body or "",
     note = snippet.note or "",
+    category = self:NormalizeCategory(snippet.category),
   }
 end
 
@@ -52,6 +84,19 @@ function db:GetForClass(classFile)
     copy[i] = source[i]
   end
   return copy
+end
+
+-- Class snippets visible for the active PvE or PvP filter.
+function db:GetForClassAndFilter(classFile, filterMode)
+  local source = self:GetForClass(classFile)
+  local filtered = {}
+  for i = 1, #source do
+    local snippet = source[i]
+    if self:MatchesFilter(snippet.category, filterMode) then
+      filtered[#filtered + 1] = snippet
+    end
+  end
+  return filtered
 end
 
 -- Look up a single snippet by class and id.

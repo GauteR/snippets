@@ -197,6 +197,47 @@ assert_eq(
   "ExpandConditionals trims spaces around race tokens"
 )
 
+-- Category filter: general visible in both PvE and PvP; pve/pvp are exclusive.
+assert_eq(Snippets.DB:NormalizeCategory(nil), "general", "NormalizeCategory defaults nil to general")
+assert_eq(Snippets.DB:NormalizeCategory("PvP"), "pvp", "NormalizeCategory lowercases")
+assert_eq(Snippets.DB:NormalizeCategory("raid"), "general", "NormalizeCategory falls back for unknown")
+
+assert_true(Snippets.DB:MatchesFilter("general", "pve"), "general matches pve filter")
+assert_true(Snippets.DB:MatchesFilter("general", "pvp"), "general matches pvp filter")
+assert_true(Snippets.DB:MatchesFilter("pve", "pve"), "pve matches pve filter")
+assert_true(not Snippets.DB:MatchesFilter("pve", "pvp"), "pve does not match pvp filter")
+assert_true(Snippets.DB:MatchesFilter("pvp", "pvp"), "pvp matches pvp filter")
+assert_true(not Snippets.DB:MatchesFilter("pvp", "pve"), "pvp does not match pve filter")
+
+Snippets.DB:Register("ROGUE", {
+  id = "rogue_general",
+  name = "Sprint",
+  category = "general",
+  body = "/cast Sprint",
+})
+Snippets.DB:Register("ROGUE", {
+  id = "rogue_pve",
+  name = "Sap",
+  category = "pve",
+  body = "/cast Sap",
+})
+Snippets.DB:Register("ROGUE", {
+  id = "rogue_pvp",
+  name = "Kidney Shot",
+  category = "pvp",
+  body = "/cast Kidney Shot",
+})
+
+local roguePve = Snippets.DB:GetForClassAndFilter("ROGUE", "pve")
+assert_eq(#roguePve, 2, "PvE filter returns general + pve")
+assert_eq(roguePve[1].id, "rogue_general", "PvE filter keeps general first")
+assert_eq(roguePve[2].id, "rogue_pve", "PvE filter includes pve")
+
+local roguePvp = Snippets.DB:GetForClassAndFilter("ROGUE", "pvp")
+assert_eq(#roguePvp, 2, "PvP filter returns general + pvp")
+assert_eq(roguePvp[1].id, "rogue_general", "PvP filter keeps general")
+assert_eq(roguePvp[2].id, "rogue_pvp", "PvP filter includes pvp")
+
 if failures > 0 then
   print(string.format("\n%d test(s) failed", failures))
   os.exit(1)
