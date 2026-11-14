@@ -3,8 +3,11 @@ Snippets.DB:Register("WARRIOR", {
   id = "warrior_charge",
   name = "Charge",
   icon = "Ability_Warrior_Charge",
-  body = "/cast Charge",
-  note = "Example template",
+  body = [[
+/cast Charge
+{IF:DWARF=/cast Stoneform|GNOME=/cast Escape Artist|ORC=/cast Blood Fury|TROLL=/cast Berserking|TAUREN=/cast War Stomp|SCOURGE=/cast Will of the Forsaken|NIGHTELF=/cast Shadowmeld|HUMAN=/cast Perception}
+]],
+  note = "Example with race {IF:...} conditional",
 })
 
 Snippets.DB:Register("WARRIOR", {
