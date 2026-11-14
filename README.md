@@ -15,6 +15,7 @@ Open a browser with `/snippets`, pick a template for your current class, and cli
 
 - Template database of macro snippets, one data file per class
 - List filtered automatically to the logged-in character’s class (`UnitClass`)
+- PvE / PvP filter buttons (`general` snippets appear in both)
 - Race conditionals in template bodies (`{IF:…}`) expanded from `UnitRace`
 - Preview pane shows the expanded macro (editable before create)
 - **Create Macro** uses `CreateMacro` (character macros by default)
@@ -35,9 +36,10 @@ Open a browser with `/snippets`, pick a template for your current class, and cli
 
 1. Log in on the character you want macros for.
 2. Run `/snippets`.
-3. Select a snippet in the list (class templates only).
-4. Check the **Preview** pane — `{IF:…}` blocks are already expanded for your race (you can still edit).
-5. Click **Create Macro** — the macro body is taken from the preview contents.
+3. Choose **PvE** or **PvP** (general templates stay visible in both).
+4. Select a snippet in the list.
+5. Check the **Preview** pane — `{IF:…}` blocks are already expanded for your race (you can still edit).
+6. Click **Create Macro** — the macro body is taken from the preview contents.
 
 The new macro appears in the normal Blizzard macro UI. Creation is blocked while in combat. If a name is already taken, a numeric suffix is added (`Charge`, `Charge 2`, …). Names are limited to 16 characters; bodies to 255 characters (newlines count).
 
@@ -55,6 +57,7 @@ Edit [`snippets/Config.lua`](snippets/Config.lua):
 | `MAX_NAME_LENGTH` | `16` | Client macro name limit. |
 | `ADDON_NAME` | `"Snippets"` | Display name used by the addon. |
 | `SLASH_COMMAND` | `"/snippets"` | Documented slash command (registration is in `Core.lua`). |
+| `DEFAULT_FILTER` | `"pve"` | Initial list filter: `"pve"` or `"pvp"`. |
 
 After changing config or data files, reload with `/reload`.
 
@@ -78,6 +81,7 @@ Snippets.DB:Register("MAGE", {
 | `name` | recommended | Macro name shown in the list and used for `CreateMacro`. |
 | `icon` | no | Icon token (defaults to `INV_Misc_QuestionMark`). |
 | `body` | yes | Macro text. Empty bodies cannot be created. |
+| `category` | no | `general` (default), `pve`, or `pvp`. `general` is shown under both filters. |
 | `note` | no | Author note (not shown in the UI yet). |
 
 ### Multiline macros
@@ -154,13 +158,14 @@ Requires a local Lua interpreter (5.1+ / 5.4 is fine). From the repository root:
 lua tests/test_snippet_db.lua
 ```
 
-Coverage includes class filtering, unique macro names (including the 16-character limit), body clamping to 255 characters, multiline bodies, and `{IF:…}` race expansion.
+Coverage includes class filtering, PvE/PvP category filtering, unique macro names (including the 16-character limit), body clamping to 255 characters, multiline bodies, and `{IF:…}` race expansion.
 
 ## QA checklist
 
 - [ ] Addon loads on Forever (`Interface` 16001).
 - [ ] `/snippets` opens the window when `ENABLED = true`.
 - [ ] List matches the current character class.
+- [ ] PvE filter shows `general` + `pve`; PvP filter shows `general` + `pvp`.
 - [ ] Preview expands `{IF:…}` for the current race and drops unmatched branches.
 - [ ] Preview shows single-line and multiline bodies.
 - [ ] **Create Macro** creates a usable character macro.

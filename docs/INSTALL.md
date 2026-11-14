@@ -22,6 +22,7 @@ Edit `snippets/Config.lua`:
 | --- | --- |
 | `ENABLED` | Feature flag. Set `false` to disable slash command and UI. |
 | `PER_CHARACTER` | `true` creates character macros; `false` creates general macros. |
+| `DEFAULT_FILTER` | `"pve"` or `"pvp"` — which list filter is active when the window opens. |
 
 ## Add or edit snippets
 
@@ -47,6 +48,12 @@ body = [[
 
 -- or:
 body = "/stopattack\n/cast Feign Death"
+```
+
+Categories — `general` (default, shown in PvE and PvP), `pve`, or `pvp`:
+
+```lua
+category = "pvp",
 ```
 
 Race conditionals — expanded from the character’s `UnitRace` file token:
