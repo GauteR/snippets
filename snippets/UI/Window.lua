@@ -274,6 +274,23 @@ function UI:EnsureRows(count)
       UI:SelectIndex(index)
     end)
 
+    -- Show author note as a tooltip while hovering the list row.
+    row:SetScript("OnEnter", function(self)
+      local note = self.note
+      if not note or note == "" then
+        return
+      end
+      GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+      GameTooltip:ClearLines()
+      GameTooltip:AddLine(note, 1, 1, 1, true)
+      GameTooltip:Show()
+    end)
+    row:SetScript("OnLeave", function(self)
+      if GameTooltip:IsOwned(self) then
+        GameTooltip:Hide()
+      end
+    end)
+
     self.rows[index] = row
   end
 end
@@ -298,8 +315,10 @@ function UI:Refresh()
     local snippet = self.snippets[i]
     if snippet then
       row.text:SetText(snippet.name)
+      row.note = snippet.note or ""
       row:Show()
     else
+      row.note = ""
       row:Hide()
     end
   end

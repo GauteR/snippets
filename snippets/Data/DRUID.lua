@@ -116,3 +116,16 @@ Snippets.DB:Register("DRUID", {
   category = "general",
   note = "Leave form; Remove Curse; Shift Cure Poison; Alt Abolish Poison (mouseover or self)",
 })
+
+-- Buff sequence (no damage/heal crit window on press) — cancelform only, no burst prefix.
+Snippets.DB:Register("DRUID", {
+  id = "druid_motw_thorns_seq",
+  name = "MotW Thorns",
+  icon = "Spell_Nature_Regeneration",
+  body = [[
+/cancelform
+/castsequence reset=10/target Mark of the Wild, Thorns
+]],
+  category = "general",
+  note = "Leave form; MotW then Thorns; reset 10s or target change",
+})

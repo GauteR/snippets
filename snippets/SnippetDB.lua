@@ -148,6 +148,7 @@ local TOOLTIP_SKIP_CASTS = {
   ["blood fury"] = true,
   ["berserking"] = true,
   ["eureka!"] = true,
+  ["elune's light"] = true,
   ["bloodrage"] = true,
   ["presence of mind"] = true,
   ["inner focus"] = true,

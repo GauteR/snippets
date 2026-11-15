@@ -56,3 +56,15 @@ Snippets.DB:Register("PALADIN", {
   note = "Racial burst + Divine Favor alone (DF GCD Unverified — do not stack heal on same press)",
 })
 
+-- Burst prefix includes Elune's Light (Night Elf +10% crit) and trinkets that can raise heal crit.
+Snippets.DB:Register("PALADIN", {
+  id = "paladin_vigil_shock_seq",
+  name = "Vigil Shock",
+  icon = "Spell_Holy_SearingLight",
+  body = S.withBurstPrefix([[
+/castsequence [@mouseover,help,nodead][help,nodead][@player] reset=30 Light's Vigil, Holy Shock
+]]),
+  category = "pve",
+  note = "Trinkets + racial burst (incl. Elune's Light); Light's Vigil then Holy Shock",
+})
+

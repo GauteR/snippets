@@ -77,3 +77,14 @@ Snippets.DB:Register("ROGUE", {
   category = "pvp",
   note = "Clean Vanish",
 })
+
+Snippets.DB:Register("ROGUE", {
+  id = "rogue_gouge_bs_seq",
+  name = "Gouge BS",
+  icon = "Ability_Gouge",
+  body = [[
+/castsequence reset=6 Gouge, Backstab
+]],
+  category = "pve",
+  note = "Gouge then Backstab; reset after 6s",
+})

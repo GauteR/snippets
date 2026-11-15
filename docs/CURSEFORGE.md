@@ -21,6 +21,7 @@ Browse templates for your current class, preview the expanded macro, and create 
 - **PvE** / **PvP** filters (`general` templates appear in both)
 - Race lines expanded automatically when present in the template
 - Preview is editable before you create
+- Hover a template for a short description tooltip
 - Created macros persist in the Blizzard macro UI
 
 ## Install
@@ -39,7 +40,7 @@ Browse templates for your current class, preview the expanded macro, and create 
 1. Log in on the character you want macros for.
 2. Type `/snippets` in chat.
 3. Choose **PvE** or **PvP**.
-4. Select a snippet, check the **Preview**, edit if you want.
+4. Select a snippet (hover for description), check the **Preview**, edit if you want.
 5. Click **Create Macro**.
 
 ## Support / source

@@ -38,7 +38,7 @@ L.CHAT_LOADED = "Loaded. Type /snippets to open the snippet browser."
 
 L.OPTIONS_VERSION_FMT = "Version %s"
 L.OPTIONS_HELP =
-  "Browse class macro templates with /snippets, filter PvE or PvP, then Create Macro. Enable Maintain only when the preview is unchanged to re-sync from the template when spells are learned."
+  "Browse class macro templates with /snippets, filter PvE or PvP, hover for descriptions, then Create Macro."
 L.OPTIONS_OPEN = "Open Snippets"
 
 -- Resolve a locale key; optional format args.

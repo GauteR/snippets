@@ -20,6 +20,7 @@ Open a browser with `/snippets`, pick a template for your current class, and cli
 - PvE / PvP filter buttons (`general` snippets appear in both)
 - Race conditionals in template bodies (`{IF:…}`) expanded from `UnitRace`
 - Preview pane shows the expanded macro (editable before create)
+- Hover a list row to see the snippet `note` as a tooltip description
 - Bodies always get `#showtooltip` with the primary `/cast` spell (bare `#showtooltip` for `/castsequence`)
 - High off-GCD `/cast` lines are omitted until the spell is known (`IsSpellKnown`)
 - **Maintain** checkbox: re-sync from the raw template on login / `SPELLS_CHANGED` (disabled if preview was edited)
@@ -43,7 +44,7 @@ Open a browser with `/snippets`, pick a template for your current class, and cli
 1. Log in on the character you want macros for.
 2. Run `/snippets`.
 3. Choose **PvE** or **PvP** (general templates stay visible in both).
-4. Select a snippet in the list.
+4. Select a snippet in the list (hover a row to read its description tooltip).
 5. Check the **Preview** pane — `{IF:…}` blocks are already expanded for your race (you can still edit).
 6. Optionally enable **Maintain** — only available while the preview matches the expanded template (no manual edits). Maintained macros re-sync from the template on login and when spells change; that overwrites the macro body on purpose.
 7. Click **Create Macro** — without Maintain the preview text is the source (then run through the same expand/filter/`#showtooltip` pipeline); with Maintain the raw template is the source.
@@ -91,7 +92,7 @@ Snippets.DB:Register("MAGE", {
 | `icon` | no | Icon token (defaults to `INV_Misc_QuestionMark`). |
 | `body` | yes | Macro text. Empty bodies cannot be created. |
 | `category` | no | `general` (default), `pve`, or `pvp`. `general` is shown under both filters. |
-| `note` | no | Author note (not shown in the UI yet). |
+| `note` | no | Author note shown as a tooltip when hovering the snippet in the list. |
 
 ### Multiline macros
 
@@ -111,7 +112,7 @@ Examples ship in `Data/MAGE.lua` (long string) and `Data/HUNTER.lua` (`\n`).
 
 ### Classes included
 
-`Data/GENERAL.lua` registers shared trinket/racial templates onto every class. Per-class files: `WARRIOR`, `PALADIN`, `HUNTER`, `ROGUE`, `PRIEST`, `SHAMAN`, `MAGE`, `WARLOCK`, `DRUID` — Forever essentials from [`docs/MACROS.md`](docs/MACROS.md). Shared helpers live in `Data/SHARED.lua`. Curing/dispel templates: Druid Cure Key, Mage Remove Lesser Curse, Shaman Cure Poison/Disease, Priest Cure/Abolish Disease; Paladin uses existing Cleanse.
+`Data/GENERAL.lua` registers shared trinket/racial templates onto every class. Per-class files: `WARRIOR`, `PALADIN`, `HUNTER`, `ROGUE`, `PRIEST`, `SHAMAN`, `MAGE`, `WARLOCK`, `DRUID` — Forever essentials from [`docs/MACROS.md`](docs/MACROS.md). Shared helpers live in `Data/SHARED.lua` (trinkets + racial burst including Night Elf **Elune's Light**). Curing/dispel templates: Druid Cure Key, Mage Remove Lesser Curse, Shaman Cure Poison/Disease, Priest Cure/Abolish Disease; Paladin uses existing Cleanse. Castsequence openers (DoTs, Mark/Sting, Vigil/Shock, …) are listed under Cast sequences in [`docs/MACROS.md`](docs/MACROS.md).
 
 
 ### Race conditionals (`{IF:…}`)
@@ -225,6 +226,7 @@ Coverage includes class filtering, PvE/PvP category filtering, unique macro name
 - [ ] PvE filter shows `general` + `pve`; PvP filter shows `general` + `pvp`.
 - [ ] Preview expands `{IF:…}` for the current race and drops unmatched branches.
 - [ ] Preview shows single-line and multiline bodies.
+- [ ] Hovering a list row with a `note` shows a description tooltip; empty notes show no tooltip.
 - [ ] **Create Macro** creates a usable character macro and opens the Blizzard macro UI (character tab when configured).
 - [ ] Snippets window has no bottom Close button; X / Escape still close it.
 - [ ] Creating the same snippet twice gets a unique name suffix.

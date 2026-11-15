@@ -266,6 +266,9 @@ assert_eq(tipRacialPrefix, "#showtooltip Bloodthirst\n/cast Blood Fury\n/cast Bl
 local tipPom = Snippets.DB:EnsureShowTooltip("/cast Eureka!\n/cast Presence of Mind\n/cast Pyroblast")
 assert_eq(tipPom, "#showtooltip Pyroblast\n/cast Eureka!\n/cast Presence of Mind\n/cast Pyroblast", "EnsureShowTooltip skips Eureka and Presence of Mind")
 
+local tipElune = Snippets.DB:EnsureShowTooltip("/cast Elune's Light\n/cast Holy Shock")
+assert_eq(tipElune, "#showtooltip Holy Shock\n/cast Elune's Light\n/cast Holy Shock", "EnsureShowTooltip skips Elune's Light prefix")
+
 local tipOnlyPrefix = Snippets.DB:EnsureShowTooltip("/cast Blood Fury")
 assert_eq(tipOnlyPrefix, "#showtooltip\n/cast Blood Fury", "EnsureShowTooltip is bare when only High prefix remains")
 
@@ -324,16 +327,72 @@ assert_eq(
 
 -- Curing templates from Data/*.lua (Shared required by class files).
 dofile(addonRoot .. "/Data/SHARED.lua")
-dofile(addonRoot .. "/Data/DRUID.lua")
-dofile(addonRoot .. "/Data/MAGE.lua")
-dofile(addonRoot .. "/Data/SHAMAN.lua")
+dofile(addonRoot .. "/Data/WARRIOR.lua")
+dofile(addonRoot .. "/Data/PALADIN.lua")
+dofile(addonRoot .. "/Data/HUNTER.lua")
+dofile(addonRoot .. "/Data/ROGUE.lua")
 dofile(addonRoot .. "/Data/PRIEST.lua")
+dofile(addonRoot .. "/Data/SHAMAN.lua")
+dofile(addonRoot .. "/Data/MAGE.lua")
+dofile(addonRoot .. "/Data/WARLOCK.lua")
+dofile(addonRoot .. "/Data/DRUID.lua")
+
+assert_true(
+  Snippets.Shared.RACIAL_BURST_IF:find("Elune's Light", 1, true) ~= nil,
+  "Shared racial burst includes Elune's Light"
+)
+assert_true(
+  Snippets.Shared.RACIAL_DEFENSIVE_IF:find("Shatter Curse", 1, true) ~= nil,
+  "Shared defensive IF includes Shatter Curse"
+)
+assert_true(
+  Snippets.Shared.RACIAL_DEFENSIVE_IF:find("Perception", 1, true) ~= nil,
+  "Shared defensive IF includes Perception"
+)
+assert_true(
+  Snippets.Shared.RACIAL_DEFENSIVE_IF:find("Walk on Air", 1, true) ~= nil,
+  "Shared defensive IF includes Walk on Air"
+)
+assert_true(
+  Snippets.Shared.RACIAL_DEFENSIVE_IF:find("Read Ley Line", 1, true) ~= nil,
+  "Shared defensive IF includes Read Ley Line"
+)
+assert_true(
+  Snippets.Shared.RACIAL_DEFENSIVE_IF:find("Skysight", 1, true) ~= nil,
+  "Shared defensive IF includes Skysight"
+)
+assert_true(
+  Snippets.Shared.RACIAL_DEFENSIVE_IF:find("Rapid Regeneration", 1, true) == nil,
+  "Shared defensive IF omits Rapid Regeneration channel"
+)
+
+local humanDef = Snippets.DB:ExpandConditionals(Snippets.Shared.RACIAL_DEFENSIVE_IF, "Human")
+assert_true(humanDef:find("Will to Survive", 1, true) ~= nil, "Human defensive expands Will to Survive")
+assert_true(humanDef:find("Perception", 1, true) ~= nil, "Human defensive expands Perception")
+
+local highOrderDef = Snippets.DB:ExpandConditionals(Snippets.Shared.RACIAL_DEFENSIVE_IF, "HighOrder")
+assert_true(highOrderDef:find("Walk on Air", 1, true) ~= nil, "HighOrder expands Walk on Air")
+assert_true(highOrderDef:find("Read Ley Line", 1, true) ~= nil, "HighOrder expands Read Ley Line")
 
 local curingSnippets = {
   { "DRUID", "druid_cure_key" },
   { "MAGE", "mage_remove_curse_mo" },
   { "SHAMAN", "shaman_cure_key" },
   { "PRIEST", "priest_cure_disease_mo" },
+}
+
+local castsequenceSnippets = {
+  { "WARLOCK", "warlock_aff_dots_seq", "reset=target/combat" },
+  { "WARLOCK", "warlock_immol_conflag", "reset=target" },
+  { "WARLOCK", "warlock_demo_sac_imp", "reset=60" },
+  { "HUNTER", "hunter_mark_sting_seq", "reset=target" },
+  { "HUNTER", "hunter_clip_kick_seq", "reset=6" },
+  { "HUNTER", "hunter_scatter_trap_seq", "reset=20" },
+  { "ROGUE", "rogue_gouge_bs_seq", "reset=6" },
+  { "MAGE", "mage_nova_lance_seq", "reset=8" },
+  { "PALADIN", "paladin_vigil_shock_seq", "reset=30" },
+  { "WARRIOR", "warrior_rend_hs_seq", "reset=combat" },
+  { "DRUID", "druid_motw_thorns_seq", "reset=10/target" },
 }
 
 for i = 1, #curingSnippets do
@@ -368,6 +427,50 @@ if mageCure then
     mageCure.body:find("Remove Lesser Curse", 1, true) ~= nil,
     "mage uses Forever Remove Lesser Curse"
   )
+end
+
+for i = 1, #castsequenceSnippets do
+  local classFile, snippetId, resetNeedle = castsequenceSnippets[i][1], castsequenceSnippets[i][2], castsequenceSnippets[i][3]
+  local snippet = Snippets.DB:GetById(classFile, snippetId)
+  assert_true(snippet ~= nil, "castsequence snippet registered: " .. snippetId)
+  if snippet then
+    assert_true(#snippet.name <= 16, snippetId .. " name within 16 chars")
+    assert_true(
+      snippet.body:find("/castsequence", 1, true) ~= nil,
+      snippetId .. " contains /castsequence"
+    )
+    assert_true(
+      snippet.body:find(resetNeedle, 1, true) ~= nil,
+      snippetId .. " contains " .. resetNeedle
+    )
+    local expanded = Snippets.DB:EnsureShowTooltip(snippet.body)
+    assert_eq(
+      expanded:sub(1, #"#showtooltip\n"),
+      "#showtooltip\n",
+      snippetId .. " uses bare #showtooltip"
+    )
+    assert_true(
+      #expanded <= 255,
+      string.format("%s expanded body <= 255 (got %d)", snippetId, #expanded)
+    )
+  end
+end
+
+local affDots = Snippets.DB:GetById("WARLOCK", "warlock_aff_dots_seq")
+if affDots then
+  assert_true(affDots.body:find("Bane of Agony", 1, true) ~= nil, "aff dots use Forever Bane of Agony")
+  assert_true(affDots.body:find("/use 13", 1, true) ~= nil, "aff dots include trinket burst")
+end
+
+local vigil = Snippets.DB:GetById("PALADIN", "paladin_vigil_shock_seq")
+if vigil then
+  assert_true(vigil.body:find("/use 13", 1, true) ~= nil, "vigil shock includes trinket burst for heal crit")
+  assert_true(vigil.body:find("Elune's Light", 1, true) ~= nil, "vigil shock racial IF includes Elune's Light")
+end
+
+local motw = Snippets.DB:GetById("DRUID", "druid_motw_thorns_seq")
+if motw then
+  assert_true(motw.body:find("/use 13", 1, true) == nil, "buff sequence omits trinket burst")
 end
 
 if failures > 0 then
