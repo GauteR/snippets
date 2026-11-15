@@ -46,7 +46,7 @@ Open a browser with `/snippets`, pick a template for your current class, and cli
 4. Select a snippet in the list.
 5. Check the **Preview** pane — `{IF:…}` blocks are already expanded for your race (you can still edit).
 6. Optionally enable **Maintain** — only available while the preview matches the expanded template (no manual edits). Maintained macros re-sync from the template on login and when spells change; that overwrites the macro body on purpose.
-7. Click **Create Macro** — without Maintain the body comes from the preview; with Maintain it comes from the raw template.
+7. Click **Create Macro** — without Maintain the preview text is the source (then run through the same expand/filter/`#showtooltip` pipeline); with Maintain the raw template is the source.
 
 The new macro appears in the Blizzard macro UI (opened automatically on create, character tab when `PER_CHARACTER` is on). Creation is blocked while in combat. If a name is already taken, a numeric suffix is added (`Charge`, `Charge 2`, …). Names are limited to 16 characters; bodies to 255 characters (newlines count).
 
@@ -197,7 +197,7 @@ README.md
 
 ## Forever-specific notes
 
-- Snippet templates stay in Lua files. **Maintain** uses SavedVariables (`SnippetsDB`) for the opt-in list; Forever may not load SV after a cold start — re-create with Maintain or re-seed after login if the list is empty.
+- Snippet templates stay in Lua files. **Maintain** uses per-character SavedVariables (`SnippetsDB`) for the opt-in list; Forever may not load SV after a cold start — re-create with Maintain or re-seed after login if the list is empty. Stale entries are removed when the macro slot is missing.
 - Macros created with **Create Macro** do persist across client restarts.
 - `## Interface: 16001` matches the Forever client; do not treat this as Classic Era `115xx` tooling.
 - Forever lacks Retail specializations the same way Retail does; class filtering uses class file tokens only, not spec.

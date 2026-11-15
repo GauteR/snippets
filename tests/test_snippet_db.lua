@@ -269,6 +269,11 @@ assert_eq(tipPom, "#showtooltip Pyroblast\n/cast Eureka!\n/cast Presence of Mind
 local tipOnlyPrefix = Snippets.DB:EnsureShowTooltip("/cast Blood Fury")
 assert_eq(tipOnlyPrefix, "#showtooltip\n/cast Blood Fury", "EnsureShowTooltip is bare when only High prefix remains")
 
+assert_true(Snippets.DB:IsHighOffGcdCast("Presence of Mind"), "PoM is High off-GCD")
+assert_true(not Snippets.DB:IsHighOffGcdCast("Cold Blood"), "Cold Blood is not High (Unverified)")
+assert_true(not Snippets.DB:IsHighOffGcdCast("Divine Favor"), "Divine Favor is not High (Unverified)")
+assert_true(not Snippets.DB:IsHighOffGcdCast("Pyroblast"), "main CD is not High off-GCD")
+
 -- FilterUnknownOffGcdCasts: drop High off-GCD /cast lines when spell is unknown.
 local filterBody = "/use 13\n/use 14\n/cast Blood Fury\n/cast Presence of Mind\n/cast Pyroblast"
 local knownNone = function(spell)

@@ -45,19 +45,15 @@ function Snippets:PlayerKnowsSpell(spellName)
     return true
   end
 
-  local spellId
-  local name, _, _, _, _, _, id = GetSpellInfo(spellName)
-  spellId = id
-  if not spellId and type(IsPlayerSpell) == "function" and name then
-    -- Some clients expose IsPlayerSpell(spellId) only after GetSpellInfo resolves.
+  local _, _, _, _, _, _, spellId = GetSpellInfo(spellName)
+  if not spellId then
+    return false
   end
-  if spellId then
-    if IsSpellKnown(spellId) then
-      return true
-    end
-    if type(IsPlayerSpell) == "function" and IsPlayerSpell(spellId) then
-      return true
-    end
+  if IsSpellKnown(spellId) then
+    return true
+  end
+  if type(IsPlayerSpell) == "function" and IsPlayerSpell(spellId) then
+    return true
   end
   return false
 end
@@ -166,6 +162,8 @@ function Snippets:MaintainOne(macroName, entry)
 
   local index = self:FindMacroIndexByName(macroName, entry.perCharacter)
   if not index then
+    -- Macro deleted or renamed — drop stale SavedVariables entry.
+    self:UnregisterMaintained(macroName)
     return false
   end
 
@@ -176,7 +174,11 @@ function Snippets:MaintainOne(macroName, entry)
 
   local icon = "INV_Misc_QuestionMark"
   local ok = pcall(EditMacro, index, macroName, icon, body)
-  return ok == true
+  if not ok then
+    Print(self:T("ERR_MAINTAIN_FAILED", macroName))
+    return false
+  end
+  return true
 end
 
 function Snippets:MaintainAll()
@@ -190,8 +192,17 @@ function Snippets:MaintainAll()
 
   self._maintainPending = false
   local db = self:EnsureSavedVars()
-  for macroName, entry in pairs(db.maintained) do
-    self:MaintainOne(macroName, entry)
+  -- Copy keys first so UnregisterMaintained during the loop is safe.
+  local names = {}
+  for macroName in pairs(db.maintained) do
+    names[#names + 1] = macroName
+  end
+  for i = 1, #names do
+    local macroName = names[i]
+    local entry = db.maintained[macroName]
+    if entry then
+      self:MaintainOne(macroName, entry)
+    end
   end
 end
 
@@ -363,9 +374,17 @@ eventFrame:SetScript("OnEvent", function(_, event)
   end
 
   if event == "SPELLS_CHANGED" then
-    if Snippets:IsMaintainEnabled() then
-      Snippets:MaintainAll()
+    if not Snippets:IsMaintainEnabled() then
+      return
     end
+    -- Throttle bursty SPELLS_CHANGED (talent/trainer spam).
+    local now = (type(GetTime) == "function" and GetTime()) or 0
+    if Snippets._lastMaintainSpellTime and (now - Snippets._lastMaintainSpellTime) < 0.5 then
+      Snippets._maintainPending = true
+      return
+    end
+    Snippets._lastMaintainSpellTime = now
+    Snippets:MaintainAll()
     return
   end
 

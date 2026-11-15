@@ -29,6 +29,7 @@
       "GetSpellInfo",
       "IsSpellKnown",
       "IsPlayerSpell",
+      "GetTime",
       "SnippetsDB",
       "ShowMacroFrame",
       "ShowUIPanel",

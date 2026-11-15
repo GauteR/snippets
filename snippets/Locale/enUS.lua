@@ -30,6 +30,7 @@ L.ERR_EMPTY_BODY = "Snippet body is empty."
 L.ERR_CREATE_FAILED = "CreateMacro failed."
 L.ERR_SLOTS_FULL = "Macro slots may be full."
 L.ERR_BODY_TOO_LONG = "Macro body exceeds %d characters (including #showtooltip)."
+L.ERR_MAINTAIN_FAILED = "Failed to update maintained macro: %s"
 
 
 L.CHAT_DISABLED = "Addon is disabled."

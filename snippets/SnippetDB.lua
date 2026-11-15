@@ -153,8 +153,6 @@ local TOOLTIP_SKIP_CASTS = {
   ["inner focus"] = true,
   ["nature's swiftness"] = true,
   ["fel domination"] = true,
-  ["cold blood"] = true,
-  ["divine favor"] = true,
 }
 
 -- True when spell name is a High off-GCD cast that may be gated on learn.

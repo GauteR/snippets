@@ -103,16 +103,11 @@ function UI:Initialize()
     UI:CreateSelected()
   end)
 
-  -- Maintain: re-sync from template; only when preview matches expanded mal.
+  -- Maintain: re-sync from template; only when preview matches expanded template.
   local maintainCheck = CreateFrame("CheckButton", "SnippetsMaintainCheck", frame, "UICheckButtonTemplate")
   maintainCheck:SetPoint("BOTTOMLEFT", createButton, "TOPLEFT", -4, 6)
   maintainCheck:SetSize(24, 24)
   maintainCheck:SetChecked(false)
-  maintainCheck:SetScript("OnClick", function(self)
-    if not self:IsEnabled() then
-      self:SetChecked(false)
-    end
-  end)
   local maintainLabel = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
   maintainLabel:SetPoint("LEFT", maintainCheck, "RIGHT", 2, 0)
   maintainLabel:SetText(Snippets:T("MAINTAIN_LABEL"))
@@ -231,6 +226,9 @@ function UI:UpdateMaintainAvailability()
     self.maintainCheck:SetChecked(false)
     self.maintainCheck:Disable()
     self.maintainCheck:SetAlpha(0.4)
+    if self.maintainLabel then
+      self.maintainLabel:SetAlpha(0.4)
+    end
     return
   end
 
@@ -239,10 +237,16 @@ function UI:UpdateMaintainAvailability()
   if matchesCanonical and self.selectedIndex and self.snippets[self.selectedIndex] then
     self.maintainCheck:Enable()
     self.maintainCheck:SetAlpha(1)
+    if self.maintainLabel then
+      self.maintainLabel:SetAlpha(1)
+    end
   else
     self.maintainCheck:SetChecked(false)
     self.maintainCheck:Disable()
     self.maintainCheck:SetAlpha(0.4)
+    if self.maintainLabel then
+      self.maintainLabel:SetAlpha(0.4)
+    end
   end
 end
 

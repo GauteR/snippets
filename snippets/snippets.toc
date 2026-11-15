@@ -5,7 +5,7 @@
 ## Version: @project-version@
 ## DefaultState: enabled
 ## IconTexture: Interface\Icons\INV_Misc_Note_01
-## SavedVariables: SnippetsDB
+## SavedVariablesPerCharacter: SnippetsDB
 
 
 Config.lua
