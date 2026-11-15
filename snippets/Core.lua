@@ -120,5 +120,9 @@ eventFrame:SetScript("OnEvent", function(_, event)
     Snippets.UI:Initialize()
   end
 
+  if Snippets.Options and Snippets.Options.Initialize then
+    Snippets.Options:Initialize()
+  end
+
   Print("Loaded. Type /snippets to open the snippet browser.")
 end)

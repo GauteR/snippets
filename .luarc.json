@@ -36,8 +36,14 @@
       "SLASH_SNIPPETS1",
       "GameFontHighlight",
       "GameFontNormal",
+      "GameFontNormalLarge",
       "GameFontNormalSmall",
-      "GameFontHighlightSmall"
+      "GameFontHighlightSmall",
+      "Settings",
+      "SettingsPanel",
+      "HideUIPanel",
+      "C_AddOns",
+      "GetAddOnMetadata"
     ]
   },
   "workspace": {

@@ -10,7 +10,7 @@ Class-filtered macro snippet templates. Open with `/snippets`, select a snippet,
 
 2. Restart the client or log out and back in.
 3. Enable **Snippets** on the addon list if it is disabled.
-4. Type `/snippets` in chat (or the value of `Snippets.Config.SLASH_COMMAND`).
+4. Type `/snippets` in chat (or the value of `Snippets.Config.SLASH_COMMAND`), or open **Options → AddOns → Snippets** and click **Open Snippets**.
 
 ### Publish from this repo (developers)
 
