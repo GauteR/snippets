@@ -78,3 +78,14 @@ Snippets.DB:Register("MAGE", {
   category = "pvp",
   note = "Ice Block toggle",
 })
+
+Snippets.DB:Register("MAGE", {
+  id = "mage_remove_curse_mo",
+  name = "Decurse MO",
+  icon = "Spell_Nature_RemoveCurse",
+  body = [[
+/cast [mod:shift,@player][@mouseover,help,nodead][help,nodead][@player] Remove Lesser Curse
+]],
+  category = "general",
+  note = "Remove Lesser Curse mouseover / target / self; Shift self",
+})

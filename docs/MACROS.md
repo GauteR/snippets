@@ -167,6 +167,8 @@ Sources: [Forever Paladin macros](https://wowclassicforever.info/macros/paladin/
 /cast [@mouseover,help,nodead][help,nodead][@player] Cleanse
 ```
 
+(Paladin Cleanse covers magic, poison, and disease — no separate cure-key template.)
+
 **Holy Strike (Forever Ret filler):**
 
 ```
@@ -309,6 +311,16 @@ Sources: [Forever Priest macros](https://wowclassicforever.info/macros/priest/)
 /cast [@mouseover,exists,nodead][] Dispel Magic
 ```
 
+**Cure Disease / Abolish Disease:**
+
+```
+#showtooltip
+/cast [mod:shift,@mouseover,help,nodead][mod:shift,help,nodead][mod:shift,@player] Abolish Disease; [@mouseover,help,nodead][help,nodead][@player] Cure Disease
+```
+
+- Press: Cure Disease on mouseover, target, or self
+- Shift: Abolish Disease on the same picks
+
 **Power Word: Shield mouseover:**
 
 ```
@@ -379,6 +391,16 @@ Sources: [Forever Shaman macros](https://wowclassicforever.info/macros/shaman/)
 /stopcasting
 /cast [@mouseover,harm,nodead][] Earth Shock
 ```
+
+**Cure Poison / Cure Disease:**
+
+```
+#showtooltip
+/cast [mod:shift,@mouseover,help,nodead][mod:shift,help,nodead][mod:shift,@player] Cure Disease; [@mouseover,help,nodead][help,nodead][@player] Cure Poison
+```
+
+- Press: Cure Poison on mouseover, target, or self
+- Shift: Cure Disease on the same picks
 
 **Lightning Bolt / Chain Lightning:**
 
@@ -462,6 +484,16 @@ Sources: [Forever Mage macros](https://wowclassicforever.info/macros/mage/)
 /cancelaura Ice Block
 /cast Ice Block
 ```
+
+**Remove Lesser Curse (Forever; also removes a Bane):**
+
+```
+#showtooltip
+/cast [mod:shift,@player][@mouseover,help,nodead][help,nodead][@player] Remove Lesser Curse
+```
+
+- Press: Decurse mouseover, friendly target, or self
+- Shift: Decurse self
 
 ---
 
@@ -592,6 +624,20 @@ Sources: [Forever Druid macros](https://wowclassicforever.info/macros/druid/)
 #showtooltip
 /cast [@mouseover,help,dead][help,dead] Revive
 ```
+
+**Cure key (Remove Curse / Cure Poison / Abolish Poison):**
+
+Compact mouseover-or-self targeting (skips the mid `help,nodead` tier) so the body plus `#showtooltip` stays within 255 characters.
+
+```
+#showtooltip
+/cancelform
+/cast [mod:alt,@mouseover,help,nodead][mod:alt,@player] Abolish Poison; [mod:shift,@mouseover,help,nodead][mod:shift,@player] Cure Poison; [@mouseover,help,nodead][@player] Remove Curse
+```
+
+- Press: Remove Curse on mouseover or self (leave form first)
+- Shift: Cure Poison
+- Alt: Abolish Poison
 
 ---
 
