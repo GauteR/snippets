@@ -13,3 +13,7 @@ reports/
 # Machine-specific Forever AddOns path for scripts/publish-local.ps1
 scripts/forever-addons.path
 
+
+# Feature worktrees (do not commit)
+.worktree/
+
