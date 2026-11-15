@@ -21,9 +21,11 @@ Open a browser with `/snippets`, pick a template for your current class, and cli
 - Race conditionals in template bodies (`{IF:…}`) expanded from `UnitRace`
 - Preview pane shows the expanded macro (editable before create)
 - Bodies always get `#showtooltip` with the primary `/cast` spell (bare `#showtooltip` for `/castsequence`)
+- High off-GCD `/cast` lines are omitted until the spell is known (`IsSpellKnown`)
+- **Maintain** checkbox: re-sync from the raw template on login / `SPELLS_CHANGED` (disabled if preview was edited)
 - **Create Macro** uses `CreateMacro` with the `?` icon (character macros by default)
 - Options → AddOns → Snippets panel (icon, version, help text, open button)
-- Feature flag (`ENABLED`) to disable the whole UI without removing the addon
+- Feature flags (`ENABLED`, `MAINTAIN_ENABLED`) to disable UI or maintain without removing the addon
 - Pure Lua unit tests for the snippet registry helpers
 
 ## Install
@@ -43,7 +45,8 @@ Open a browser with `/snippets`, pick a template for your current class, and cli
 3. Choose **PvE** or **PvP** (general templates stay visible in both).
 4. Select a snippet in the list.
 5. Check the **Preview** pane — `{IF:…}` blocks are already expanded for your race (you can still edit).
-6. Click **Create Macro** — the macro body is taken from the preview contents.
+6. Optionally enable **Maintain** — only available while the preview matches the expanded template (no manual edits). Maintained macros re-sync from the template on login and when spells change; that overwrites the macro body on purpose.
+7. Click **Create Macro** — without Maintain the body comes from the preview; with Maintain it comes from the raw template.
 
 The new macro appears in the Blizzard macro UI (opened automatically on create, character tab when `PER_CHARACTER` is on). Creation is blocked while in combat. If a name is already taken, a numeric suffix is added (`Charge`, `Charge 2`, …). Names are limited to 16 characters; bodies to 255 characters (newlines count).
 
@@ -56,11 +59,12 @@ Edit [`snippets/Config.lua`](snippets/Config.lua):
 | Setting | Default | Meaning |
 | --- | --- | --- |
 | `ENABLED` | `true` | Feature flag. `false` disables slash command and UI. |
+| `MAINTAIN_ENABLED` | `true` | Feature flag for Maintain checkbox and template re-sync. |
 | `PER_CHARACTER` | `true` | `true` = character macros; `false` = general account macros. |
 | `MAX_BODY_LENGTH` | `255` | Client macro body limit. |
 | `MAX_NAME_LENGTH` | `16` | Client macro name limit. |
 | `ADDON_NAME` | `"Snippets"` | Display name used by the addon. |
-| `VERSION` | `"1.1.0"` | Options panel version when TOC `@project-version@` is not packaged yet. |
+| `VERSION` | `"1.2.0"` | Options panel version when TOC `@project-version@` is not packaged yet. |
 | `SLASH_COMMAND` | `"/snippets"` | Documented slash command (registration is in `Core.lua`). |
 | `DEFAULT_FILTER` | `"pve"` | Initial list filter: `"pve"` or `"pvp"`. |
 
@@ -193,7 +197,7 @@ README.md
 
 ## Forever-specific notes
 
-- Snippet data is stored in Lua files on purpose. Forever does not load SavedVariables after a cold start.
+- Snippet templates stay in Lua files. **Maintain** uses SavedVariables (`SnippetsDB`) for the opt-in list; Forever may not load SV after a cold start — re-create with Maintain or re-seed after login if the list is empty.
 - Macros created with **Create Macro** do persist across client restarts.
 - `## Interface: 16001` matches the Forever client; do not treat this as Classic Era `115xx` tooling.
 - Forever lacks Retail specializations the same way Retail does; class filtering uses class file tokens only, not spec.
