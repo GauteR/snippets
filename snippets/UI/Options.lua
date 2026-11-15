@@ -1,4 +1,4 @@
-﻿-- Options → AddOns → Snippets: about panel with open-window action.
+-- Options → AddOns → Snippets: about panel with open-window action.
 Snippets = Snippets or {}
 Snippets.Options = Snippets.Options or {}
 

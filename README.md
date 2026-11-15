@@ -22,7 +22,7 @@ Open a browser with `/snippets`, pick a template for your current class, and cli
 - Preview pane shows the expanded macro (editable before create)
 - Bodies always get `#showtooltip` with the primary `/cast` spell (bare `#showtooltip` for `/castsequence`)
 - **Create Macro** uses `CreateMacro` with the `?` icon (character macros by default)
-
+- Options → AddOns → Snippets panel (icon, version, help text, open button)
 - Feature flag (`ENABLED`) to disable the whole UI without removing the addon
 - Pure Lua unit tests for the snippet registry helpers
 
@@ -221,6 +221,7 @@ Coverage includes class filtering, PvE/PvP category filtering, unique macro name
 - [ ] Creating the same snippet twice gets a unique name suffix.
 - [ ] In combat, creation fails with a clear status message.
 - [ ] `ENABLED = false` disables slash/UI after `/reload`.
+- [ ] Options → AddOns → Snippets shows name, version, help text, and Open Snippets.
 
 ## License
 
