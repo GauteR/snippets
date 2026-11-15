@@ -1,24 +1,58 @@
--- Example paladin macro templates. Replace bodies with your own macros.
+-- Forever paladin macros. Divine Favor GCD is Unverified — not treated as High off-GCD.
+local S = Snippets.Shared
+
 Snippets.DB:Register("PALADIN", {
-  id = "paladin_holy_light",
-  name = "Holy Light",
+  id = "paladin_judgement",
+  name = "Judgement",
+  icon = "Spell_Holy_RighteousFury",
+  body = [[
+/startattack
+/cast Judgement
+]],
+  category = "general",
+  note = "Seal is not consumed by Judgement",
+})
+
+Snippets.DB:Register("PALADIN", {
+  id = "paladin_cleanse_mo",
+  name = "Cleanse MO",
+  icon = "Spell_Holy_Purify",
+  body = [[
+/cast [@mouseover,help,nodead][help,nodead][@player] Cleanse
+]],
+  category = "general",
+  note = "Cleanse mouseover / target / self",
+})
+
+Snippets.DB:Register("PALADIN", {
+  id = "paladin_holy_strike",
+  name = "Holy Strike",
+  icon = "Spell_Holy_HolySmite",
+  body = [[
+/startattack
+/cast Holy Strike
+]],
+  category = "pve",
+  note = "Forever Ret filler",
+})
+
+Snippets.DB:Register("PALADIN", {
+  id = "paladin_hot_r_cons",
+  name = "HotR Cons",
+  icon = "Ability_Paladin_HammerOfTheRighteous",
+  body = [[
+/cast [mod:shift] Consecration; Hammer of the Righteous
+]],
+  category = "pve",
+  note = "Prot: HotR, Shift Consecration",
+})
+
+Snippets.DB:Register("PALADIN", {
+  id = "paladin_divine_favor",
+  name = "Divine Favor",
   icon = "Spell_Holy_HolyBolt",
-  body = "/cast Holy Light",
-  note = "Example template",
+  body = S.withRacialBurst("/cast Divine Favor"),
+  category = "pve",
+  note = "Racial burst + Divine Favor alone (DF GCD Unverified — do not stack heal on same press)",
 })
 
-Snippets.DB:Register("PALADIN", {
-  id = "paladin_seal",
-  name = "Seal of Righteousness",
-  icon = "Ability_ThunderBolt",
-  body = "/cast Seal of Righteousness",
-  note = "Example template",
-})
-
-Snippets.DB:Register("PALADIN", {
-  id = "paladin_bubble",
-  name = "Divine Shield",
-  icon = "Spell_Holy_DivineIntervention",
-  body = "/cast Divine Shield",
-  note = "Example template",
-})

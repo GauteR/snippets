@@ -107,7 +107,8 @@ Examples ship in `Data/MAGE.lua` (long string) and `Data/HUNTER.lua` (`\n`).
 
 ### Classes included
 
-`WARRIOR`, `PALADIN`, `HUNTER`, `ROGUE`, `PRIEST`, `SHAMAN`, `MAGE`, `WARLOCK`, `DRUID` — each with a few placeholder templates. Replace them with your own macros.
+`Data/GENERAL.lua` registers shared trinket/racial templates onto every class. Per-class files: `WARRIOR`, `PALADIN`, `HUNTER`, `ROGUE`, `PRIEST`, `SHAMAN`, `MAGE`, `WARLOCK`, `DRUID` — Forever essentials from [`docs/MACROS.md`](docs/MACROS.md). Shared helpers live in `Data/SHARED.lua`.
+
 
 ### Race conditionals (`{IF:…}`)
 
@@ -125,7 +126,7 @@ body = [[
 - Use `\n` inside a branch value for an extra line break.
 - Preview and **Create Macro** both expand against the current character race.
 
-See `Data/WARRIOR.lua` (`warrior_charge`) for a fuller example.
+See `Data/WARRIOR.lua` (`warrior_charge_intercept`) for a fuller example.
 
 ## Documentation
 
@@ -172,7 +173,11 @@ snippets/                 # Addon folder (copy this to Interface/AddOns)
   UI/Window.lua
   Locale/enUS.lua         # UI strings (English)
   UI/Options.lua          # Options → AddOns → Snippets
-  Data/*.lua              # Per-class templates (may include {IF:...} blocks)
+  Data/SHARED.lua         # Racial IF fragments + High off-GCD burst helpers
+  Data/GENERAL.lua        # Shared templates registered for every class
+  Data/*.lua              # Per-class Forever essentials (may include {IF:...})
+
+
 .pkgmeta                  # BigWigs packager ignore / package-as
 .release/release.sh       # Pinned BigWigs packager (v2.7.0)
 scripts/release.ps1       # Tests + package (+ optional upload) — Windows

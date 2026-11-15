@@ -1,25 +1,59 @@
--- Example hunter macro templates. Replace bodies with your own macros.
+-- Forever hunter macros. Off-GCD High: pet commands.
 Snippets.DB:Register("HUNTER", {
-  id = "hunter_auto_shot",
-  name = "Auto Shot",
-  icon = "Ability_Whirlwind",
-  body = "/cast !Auto Shot",
-  note = "Example template",
-})
-
-Snippets.DB:Register("HUNTER", {
-  id = "hunter_hunters_mark",
-  name = "Hunter's Mark",
+  id = "hunter_mark_pet",
+  name = "Mark Pet",
   icon = "Ability_Hunter_SniperShot",
-  body = "/cast Hunter's Mark",
-  note = "Example template",
+  body = [[
+/cast Hunter's Mark
+/petattack
+]],
+  category = "general",
+  note = "Hunter's Mark + High off-GCD /petattack",
 })
 
--- Multiline macro via escaped newlines (\n). Equivalent to a long string.
 Snippets.DB:Register("HUNTER", {
-  id = "hunter_feign",
-  name = "Feign Death",
-  icon = "Ability_Rogue_FeignDeath",
-  body = "/stopattack\n/cast Feign Death",
-  note = "Multiline example (escaped \\n)",
+  id = "hunter_pet_ctrl",
+  name = "Pet Control",
+  icon = "Ability_Hunter_Pet_Wolf",
+  body = [[
+/petattack [nomod]
+/petpassive [mod:alt]
+/petfollow [mod:alt]
+]],
+  category = "general",
+  note = "Pet commands (High: no GCD)",
+})
+
+Snippets.DB:Register("HUNTER", {
+  id = "hunter_cancel_aspect",
+  name = "Cancel Aspect",
+  icon = "Ability_Mount_JungleTiger",
+  body = [[
+/cancelaura Aspect of the Cheetah
+/cancelaura Aspect of the Pack
+]],
+  category = "general",
+  note = "Drop Cheetah/Pack to avoid daze",
+})
+
+Snippets.DB:Register("HUNTER", {
+  id = "hunter_aimed_multi",
+  name = "Aimed Multi",
+  icon = "INV_Spear_07",
+  body = [[
+/cast [mod:shift] Multi-Shot; Aimed Shot
+]],
+  category = "pve",
+  note = "Aimed Shot; Shift Multi-Shot",
+})
+
+Snippets.DB:Register("HUNTER", {
+  id = "hunter_flare_cursor",
+  name = "Flare Cursor",
+  icon = "Spell_Fire_Flare",
+  body = [[
+/cast [@cursor] Flare
+]],
+  category = "pvp",
+  note = "Flare at cursor",
 })

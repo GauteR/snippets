@@ -260,6 +260,15 @@ assert_eq(tipBang, "#showtooltip Auto Shot\n/cast !Auto Shot", "EnsureShowToolti
 local tipUseSlot = Snippets.DB:EnsureShowTooltip("/use 13\n/cast Bloodthirst")
 assert_eq(tipUseSlot, "#showtooltip Bloodthirst\n/use 13\n/cast Bloodthirst", "EnsureShowTooltip skips numeric /use slots")
 
+local tipRacialPrefix = Snippets.DB:EnsureShowTooltip("/cast Blood Fury\n/cast Bloodrage\n/cast Bloodthirst")
+assert_eq(tipRacialPrefix, "#showtooltip Bloodthirst\n/cast Blood Fury\n/cast Bloodrage\n/cast Bloodthirst", "EnsureShowTooltip skips High off-GCD prefix casts")
+
+local tipPom = Snippets.DB:EnsureShowTooltip("/cast Eureka!\n/cast Presence of Mind\n/cast Pyroblast")
+assert_eq(tipPom, "#showtooltip Pyroblast\n/cast Eureka!\n/cast Presence of Mind\n/cast Pyroblast", "EnsureShowTooltip skips Eureka and Presence of Mind")
+
+local tipOnlyPrefix = Snippets.DB:EnsureShowTooltip("/cast Blood Fury")
+assert_eq(tipOnlyPrefix, "#showtooltip\n/cast Blood Fury", "EnsureShowTooltip is bare when only High prefix remains")
+
 if failures > 0 then
   print(string.format("\n%d test(s) failed", failures))
   os.exit(1)
