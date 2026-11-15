@@ -35,14 +35,170 @@ function Snippets:CollectExistingMacroNames()
   return names
 end
 
--- Expand {IF:...} race conditionals and ensure #showtooltip for the logged-in character.
+-- True when the player knows a spell by English Forever name (High off-GCD gating).
+function Snippets:PlayerKnowsSpell(spellName)
+  if type(spellName) ~= "string" or spellName == "" then
+    return false
+  end
+  -- Without client APIs (unit tests), keep optional casts so fixtures stay stable.
+  if type(GetSpellInfo) ~= "function" or type(IsSpellKnown) ~= "function" then
+    return true
+  end
+
+  local spellId
+  local name, _, _, _, _, _, id = GetSpellInfo(spellName)
+  spellId = id
+  if not spellId and type(IsPlayerSpell) == "function" and name then
+    -- Some clients expose IsPlayerSpell(spellId) only after GetSpellInfo resolves.
+  end
+  if spellId then
+    if IsSpellKnown(spellId) then
+      return true
+    end
+    if type(IsPlayerSpell) == "function" and IsPlayerSpell(spellId) then
+      return true
+    end
+  end
+  return false
+end
+
+-- Expand {IF:...}, drop unknown High off-GCD casts, ensure #showtooltip.
 function Snippets:ExpandBodyForPlayer(body)
   local expanded = self.DB:ExpandConditionals(body, self:GetPlayerRaceFile())
+  expanded = self.DB:FilterUnknownOffGcdCasts(expanded, function(spell)
+    return self:PlayerKnowsSpell(spell)
+  end)
   return self.DB:EnsureShowTooltip(expanded)
 end
 
+-- SavedVariables bootstrap (Forever may omit load after cold start — re-seed on create/sync).
+function Snippets:EnsureSavedVars()
+  if type(SnippetsDB) ~= "table" then
+    SnippetsDB = {}
+  end
+  if type(SnippetsDB.maintained) ~= "table" then
+    SnippetsDB.maintained = {}
+  end
+  SnippetsDB.version = 1
+  return SnippetsDB
+end
+
+function Snippets:IsMaintainEnabled()
+  return self.Config and self.Config.MAINTAIN_ENABLED == true
+end
+
+function Snippets:RegisterMaintained(macroName, entry)
+  if not self:IsMaintainEnabled() then
+    return
+  end
+  if type(macroName) ~= "string" or macroName == "" or type(entry) ~= "table" then
+    return
+  end
+  if type(entry.snippetId) ~= "string" or type(entry.classFile) ~= "string" then
+    return
+  end
+  local db = self:EnsureSavedVars()
+  db.maintained[macroName] = {
+    snippetId = entry.snippetId,
+    classFile = entry.classFile,
+    perCharacter = entry.perCharacter and true or false,
+  }
+end
+
+function Snippets:UnregisterMaintained(macroName)
+  local db = self:EnsureSavedVars()
+  if db.maintained then
+    db.maintained[macroName] = nil
+  end
+end
+
+-- Find macro slot by name in account or character range.
+function Snippets:FindMacroIndexByName(macroName, perCharacter)
+  if type(macroName) ~= "string" or macroName == "" then
+    return nil
+  end
+  local globalCount, characterCount = GetNumMacros()
+  globalCount = globalCount or 0
+  characterCount = characterCount or 0
+
+  if perCharacter then
+    local characterOffset = MAX_ACCOUNT_MACROS or 120
+    for index = characterOffset + 1, characterOffset + characterCount do
+      local name = GetMacroInfo(index)
+      if name == macroName then
+        return index
+      end
+    end
+  else
+    for index = 1, globalCount do
+      local name = GetMacroInfo(index)
+      if name == macroName then
+        return index
+      end
+    end
+  end
+  return nil
+end
+
+-- Re-expand one maintained macro from its raw template. Returns true when body changed.
+function Snippets:MaintainOne(macroName, entry)
+  if not self:IsMaintainEnabled() then
+    return false
+  end
+  if InCombatLockdown and InCombatLockdown() then
+    self._maintainPending = true
+    return false
+  end
+  if type(macroName) ~= "string" or type(entry) ~= "table" then
+    return false
+  end
+
+  local snippet = self.DB:GetById(entry.classFile, entry.snippetId)
+  if not snippet then
+    return false
+  end
+
+  local body = self:ExpandBodyForPlayer(snippet.body)
+  local maxLength = (self.Config and self.Config.MAX_BODY_LENGTH) or 255
+  if body == "" or #body > maxLength then
+    return false
+  end
+
+  local index = self:FindMacroIndexByName(macroName, entry.perCharacter)
+  if not index then
+    return false
+  end
+
+  local _, _, currentBody = GetMacroInfo(index)
+  if currentBody == body then
+    return false
+  end
+
+  local icon = "INV_Misc_QuestionMark"
+  local ok = pcall(EditMacro, index, macroName, icon, body)
+  return ok == true
+end
+
+function Snippets:MaintainAll()
+  if not self:IsMaintainEnabled() then
+    return
+  end
+  if InCombatLockdown and InCombatLockdown() then
+    self._maintainPending = true
+    return
+  end
+
+  self._maintainPending = false
+  local db = self:EnsureSavedVars()
+  for macroName, entry in pairs(db.maintained) do
+    self:MaintainOne(macroName, entry)
+  end
+end
+
 -- Create a Blizzard macro from a snippet table. Returns macroId or nil, errorMessage.
-function Snippets:CreateMacroFromSnippet(snippet)
+-- opts.maintain = true registers the macro for template re-sync (raw body only).
+function Snippets:CreateMacroFromSnippet(snippet, opts)
+  opts = opts or {}
   if InCombatLockdown and InCombatLockdown() then
     return nil, self:T("ERR_IN_COMBAT")
   end
@@ -72,6 +228,14 @@ function Snippets:CreateMacroFromSnippet(snippet)
   end
   if not macroId then
     return nil, self:T("ERR_SLOTS_FULL")
+  end
+
+  if opts.maintain and self:IsMaintainEnabled() and type(snippet.id) == "string" then
+    self:RegisterMaintained(name, {
+      snippetId = snippet.id,
+      classFile = opts.classFile or self:GetPlayerClassFile(),
+      perCharacter = self.Config.PER_CHARACTER and true or false,
+    })
   end
 
   return macroId, nil, name
@@ -170,27 +334,45 @@ end
 
 local eventFrame = CreateFrame("Frame")
 eventFrame:RegisterEvent("PLAYER_LOGIN")
+eventFrame:RegisterEvent("SPELLS_CHANGED")
+eventFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
 eventFrame:SetScript("OnEvent", function(_, event)
-  if event ~= "PLAYER_LOGIN" then
-    return
-  end
   if not Snippets:IsEnabled() then
     return
   end
 
-  SLASH_SNIPPETS1 = (Snippets.Config and Snippets.Config.SLASH_COMMAND) or "/snippets"
-  SlashCmdList["SNIPPETS"] = function()
-    Snippets:ToggleWindow()
+  if event == "PLAYER_LOGIN" then
+    Snippets:EnsureSavedVars()
+
+    SLASH_SNIPPETS1 = (Snippets.Config and Snippets.Config.SLASH_COMMAND) or "/snippets"
+    SlashCmdList["SNIPPETS"] = function()
+      Snippets:ToggleWindow()
+    end
+
+    if Snippets.UI and Snippets.UI.Initialize then
+      Snippets.UI:Initialize()
+    end
+
+    if Snippets.Options and Snippets.Options.Initialize then
+      Snippets.Options:Initialize()
+    end
+
+    Snippets:MaintainAll()
+    Print(Snippets:T("CHAT_LOADED"))
+    return
   end
 
-  if Snippets.UI and Snippets.UI.Initialize then
-    Snippets.UI:Initialize()
+  if event == "SPELLS_CHANGED" then
+    if Snippets:IsMaintainEnabled() then
+      Snippets:MaintainAll()
+    end
+    return
   end
 
-  if Snippets.Options and Snippets.Options.Initialize then
-    Snippets.Options:Initialize()
+  if event == "PLAYER_REGEN_ENABLED" then
+    if Snippets._maintainPending then
+      Snippets:MaintainAll()
+    end
   end
-
-  Print(Snippets:T("CHAT_LOADED"))
 end)
 
