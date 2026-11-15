@@ -58,14 +58,14 @@ Off-GCD must be confirmed **per Forever spell**, especially new names.
 | --- | --- | --- | --- |
 | Dwarf | Stoneform, Find Treasure | Names familiar; GCD not assumed from Classic | Unverified (except check Stoneform in-game) |
 | Gnome | Escape Artist, **Eureka!** | Eureka!: Wowhead Forever **GCD 0 seconds** | High (Eureka!); Unverified (Escape Artist) |
-| Human | **Will to Survive**, Perception | New PvP-trinket-style active | Unverified |
-| Night Elf | **Elune’s Light**, Shadowmeld | New burst racial + classic-named Shadowmeld | Unverified |
-| Skyborne (High Order) | Walk on Air, Read Ley Line | Forever-only race | Unverified |
-| Orc | Blood Fury, **Shatter Curse** | Blood Fury used in Forever racial+trinket macros | High (Blood Fury usage in Forever guides); Unverified (Shatter Curse GCD) |
-| Tauren | War Stomp, Cultivation† | Do not assume Classic War Stomp GCD | Unverified |
-| Troll | Berserking, **Rapid Regeneration** | Berserking used in Forever racial+trinket macros | High (Berserking usage); Unverified (Rapid Regeneration GCD) |
-| Undead | Will of the Forsaken, Cannibalize | Familiar names; verify GCD on Forever | Unverified |
-| Skyborne (Windshaper) | Walk on Air, Skysight | Forever-only | Unverified |
+| Human | **Will to Survive**, Perception | Both in Shared `RACIAL_DEFENSIVE_IF` (two IF blocks) | Unverified |
+| Night Elf | **Elune’s Light**, Shadowmeld | Elune’s Light in `RACIAL_BURST_IF` (+10% crit dmg/heal). Shadowmeld in defensive IF. | Unverified (Elune’s Light GCD); Unverified (Shadowmeld) |
+| Skyborne (High Order) | Walk on Air, Read Ley Line | Both in `RACIAL_DEFENSIVE_IF` (`HIGHORDER` token Unverified). Read Ley Line has cast time — not a free burst prefix. | Unverified |
+| Orc | Blood Fury, **Shatter Curse** | Blood Fury in burst IF; Shatter Curse in defensive IF | High (Blood Fury); Unverified (Shatter Curse GCD) |
+| Tauren | War Stomp, Cultivation† | War Stomp in defensive IF | Unverified |
+| Troll | Berserking, **Rapid Regeneration** | Berserking in burst IF. Rapid Regeneration is a channel cancelled by action — **not** in Shared macros. | High (Berserking); Unverified (Rapid Regeneration) |
+| Undead | Will of the Forsaken, Cannibalize | WotF in defensive IF | Unverified |
+| Skyborne (Windshaper) | Walk on Air, Skysight | Both in `RACIAL_DEFENSIVE_IF` (`WINDSHAPER` token Unverified) | Unverified |
 
 †Treat Cultivation as non-combat / non-macro unless tooltip says otherwise.
 
