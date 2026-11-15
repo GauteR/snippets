@@ -26,6 +26,8 @@ Copy the addon into your local Forever AddOns folder:
 
 Optional: `-Destination` / `--destination "…\Interface\AddOns"`, or set `SNIPPETS_FOREVER_ADDONS`, or copy `scripts/forever-addons.path.example` to `scripts/forever-addons.path`.
 
+The published TOC gets `Config.VERSION` instead of `@project-version@` so the AddOn List shows a real version locally.
+
 Then `/reload` in-game.
 
 The preview pane is editable; **Create Macro** uses the preview text and opens the Blizzard macro UI. Hover a list row to read the snippet `note` as a description tooltip.

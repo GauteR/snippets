@@ -55,6 +55,8 @@ Copy the working tree addon into Forever AddOns:
 
 Same test policy as release: requires `lua` on PATH unless you pass `-SkipTests` / `--skip-tests`. See [`INSTALL.md`](INSTALL.md) for path overrides. This does **not** run packager or upload.
 
+`publish-local` replaces `@project-version@` in the copied TOC with `Config.VERSION` so the AddOn List shows a real number during `/reload` testing. Source TOC in git stays as the packager placeholder.
+
 ## Commands
 
 Dry-run (tests + zip, no upload):

@@ -35,6 +35,38 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 SOURCE="$REPO_ROOT/snippets"
 
+# Read Config.VERSION for local TOC substitution (packager uses @project-version@ at release).
+get_config_version() {
+  local config_path="$1"
+  if [[ ! -f "$config_path" ]]; then
+    return 1
+  fi
+  local version
+  version="$(sed -nE 's/^[[:space:]]*VERSION[[:space:]]*=[[:space:]]*"([^"]+)".*/\1/p' "$config_path" | head -n 1)"
+  if [[ -z "$version" ]]; then
+    return 1
+  fi
+  printf '%s\n' "$version"
+}
+
+# Replace packager placeholders in the published TOC so AddOn List shows a real version.
+set_published_toc_version() {
+  local toc_path="$1"
+  local version="$2"
+  if [[ -z "$version" ]]; then
+    echo "Could not resolve Config.VERSION for TOC substitution." >&2
+    exit 1
+  fi
+  if ! grep -q '@project-version@' "$toc_path"; then
+    return 0
+  fi
+  local tmp
+  tmp="$(mktemp)"
+  sed "s/@project-version@/${version}/g" "$toc_path" > "$tmp"
+  mv "$tmp" "$toc_path"
+  echo "    TOC Version -> $version"
+}
+
 normalize_addons_dir() {
   local p="${1%/}"
   if [[ "$(basename "$p")" == "snippets" ]]; then
@@ -124,8 +156,13 @@ TARGET="$ADDONS_DIR/snippets"
 echo "==> Publishing $SOURCE"
 echo "    -> $TARGET"
 
+if ! VERSION="$(get_config_version "$SOURCE/Config.lua")"; then
+  echo "Could not resolve Config.VERSION from $SOURCE/Config.lua." >&2
+  exit 1
+fi
+
 if [[ $DRY_RUN -eq 1 ]]; then
-  echo "Dry-run: would replace target with source contents."
+  echo "Dry-run: would replace target with source contents and set TOC Version to $VERSION."
   exit 0
 fi
 
@@ -138,5 +175,7 @@ if [[ ! -f "$TARGET/snippets.toc" ]]; then
   echo "Publish failed: missing $TARGET/snippets.toc" >&2
   exit 1
 fi
+
+set_published_toc_version "$TARGET/snippets.toc" "$VERSION"
 
 echo "==> Done. Reload the Forever client (/reload) or restart to load changes."

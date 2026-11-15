@@ -1,4 +1,4 @@
-#Requires -Version 5.1
+﻿#Requires -Version 5.1
 <#
 .SYNOPSIS
   Copy the snippets addon into a local Forever AddOns folder for in-game testing.
@@ -22,6 +22,39 @@ param(
 $ErrorActionPreference = "Stop"
 $RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 $Source = Join-Path $RepoRoot "snippets"
+
+# Read Config.VERSION for local TOC substitution (packager uses @project-version@ at release).
+function Get-ConfigVersion {
+  param([string]$ConfigPath)
+  if (-not (Test-Path -LiteralPath $ConfigPath)) {
+    return $null
+  }
+  $raw = Get-Content -LiteralPath $ConfigPath -Raw
+  if ($raw -match '(?m)^\s*VERSION\s*=\s*"([^"]+)"') {
+    return $Matches[1]
+  }
+  return $null
+}
+
+# Replace packager placeholders in the published TOC so AddOn List shows a real version.
+function Set-PublishedTocVersion {
+  param(
+    [string]$TocPath,
+    [string]$Version
+  )
+  if (-not $Version) {
+    Write-Error "Could not resolve Config.VERSION for TOC substitution."
+  }
+  $raw = [System.IO.File]::ReadAllText($TocPath)
+  if ($raw -notlike "*@project-version@*") {
+    return
+  }
+  $updated = $raw.Replace("@project-version@", $Version)
+  # UTF-8 without BOM — default WriteAllText would add a BOM on Windows PowerShell 5.1.
+  $utf8 = New-Object System.Text.UTF8Encoding $false
+  [System.IO.File]::WriteAllText($TocPath, $updated, $utf8)
+  Write-Host "    TOC Version -> $Version"
+}
 
 function Resolve-ForeverAddOnsDir {
   param([string]$Explicit)
@@ -108,8 +141,13 @@ $target = Join-Path $addonsDir "snippets"
 Write-Host "==> Publishing $Source"
 Write-Host "    -> $target"
 
+$version = Get-ConfigVersion -ConfigPath (Join-Path $Source "Config.lua")
+if (-not $version) {
+  Write-Error "Could not resolve Config.VERSION from $(Join-Path $Source 'Config.lua')."
+}
+
 if ($WhatIf) {
-  Write-Host "WhatIf: would replace target with source contents."
+  Write-Host "WhatIf: would replace target with source contents and set TOC Version to $version."
   return
 }
 
@@ -123,5 +161,7 @@ $toc = Join-Path $target "snippets.toc"
 if (-not (Test-Path $toc)) {
   Write-Error "Publish failed: missing $toc"
 }
+
+Set-PublishedTocVersion -TocPath $toc -Version $version
 
 Write-Host "==> Done. Reload the Forever client (/reload) or restart to load changes."
