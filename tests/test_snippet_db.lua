@@ -269,6 +269,54 @@ assert_eq(tipPom, "#showtooltip Pyroblast\n/cast Eureka!\n/cast Presence of Mind
 local tipOnlyPrefix = Snippets.DB:EnsureShowTooltip("/cast Blood Fury")
 assert_eq(tipOnlyPrefix, "#showtooltip\n/cast Blood Fury", "EnsureShowTooltip is bare when only High prefix remains")
 
+-- Curing templates from Data/*.lua (Shared required by class files).
+dofile(addonRoot .. "/Data/SHARED.lua")
+dofile(addonRoot .. "/Data/DRUID.lua")
+dofile(addonRoot .. "/Data/MAGE.lua")
+dofile(addonRoot .. "/Data/SHAMAN.lua")
+dofile(addonRoot .. "/Data/PRIEST.lua")
+
+local curingSnippets = {
+  { "DRUID", "druid_cure_key" },
+  { "MAGE", "mage_remove_curse_mo" },
+  { "SHAMAN", "shaman_cure_key" },
+  { "PRIEST", "priest_cure_disease_mo" },
+}
+
+for i = 1, #curingSnippets do
+  local classFile, snippetId = curingSnippets[i][1], curingSnippets[i][2]
+  local snippet = Snippets.DB:GetById(classFile, snippetId)
+  assert_true(snippet ~= nil, "curing snippet registered: " .. snippetId)
+  if snippet then
+    assert_true(#snippet.name <= 16, snippetId .. " name within 16 chars")
+    local expanded = Snippets.DB:EnsureShowTooltip(snippet.body)
+    assert_true(
+      #expanded <= 255,
+      string.format("%s expanded body <= 255 (got %d)", snippetId, #expanded)
+    )
+    assert_true(
+      snippet.body:find("@player", 1, true) ~= nil,
+      snippetId .. " includes @player fallback"
+    )
+  end
+end
+
+local druidCure = Snippets.DB:GetById("DRUID", "druid_cure_key")
+if druidCure then
+  assert_true(druidCure.body:find("Remove Curse", 1, true) ~= nil, "druid cure has Remove Curse")
+  assert_true(druidCure.body:find("Cure Poison", 1, true) ~= nil, "druid cure has Cure Poison")
+  assert_true(druidCure.body:find("Abolish Poison", 1, true) ~= nil, "druid cure has Abolish Poison")
+  assert_true(druidCure.body:find("/cancelform", 1, true) ~= nil, "druid cure cancels form")
+end
+
+local mageCure = Snippets.DB:GetById("MAGE", "mage_remove_curse_mo")
+if mageCure then
+  assert_true(
+    mageCure.body:find("Remove Lesser Curse", 1, true) ~= nil,
+    "mage uses Forever Remove Lesser Curse"
+  )
+end
+
 if failures > 0 then
   print(string.format("\n%d test(s) failed", failures))
   os.exit(1)
