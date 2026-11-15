@@ -25,10 +25,21 @@
       "GetMacroInfo",
       "InCombatLockdown",
       "CreateMacro",
+      "ShowMacroFrame",
+      "ShowUIPanel",
+      "MacroFrame",
+      "MacroFrame_LoadUI",
+      "MacroFrame_Show",
+      "MacroFrame_SelectMacro",
+      "MacroFrame_Update",
+      "MacroFrame_SetCharacterMacros",
+      "MacroFrameTab2",
+      "PanelTemplates_SetTab",
       "MAX_ACCOUNT_MACROS",
       "UnitClass",
       "UnitRace",
       "CreateFrame",
+      "BackdropTemplate",
       "UIParent",
       "UISpecialFrames",
       "tinsert",
@@ -36,10 +47,17 @@
       "SLASH_SNIPPETS1",
       "GameFontHighlight",
       "GameFontNormal",
+      "GameFontNormalLarge",
       "GameFontNormalSmall",
-      "GameFontHighlightSmall"
+      "GameFontHighlightSmall",
+      "Settings",
+      "SettingsPanel",
+      "HideUIPanel",
+      "C_AddOns",
+      "GetAddOnMetadata"
     ]
   },
+
   "workspace": {
     "checkThirdParty": false
   }

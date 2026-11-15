@@ -4,9 +4,11 @@
 ## Author: Neema
 ## Version: @project-version@
 ## DefaultState: enabled
+## IconTexture: Interface\Icons\INV_Misc_Note_01
 
 
 Config.lua
+Locale/enUS.lua
 SnippetDB.lua
 Data/WARRIOR.lua
 Data/PALADIN.lua
@@ -19,3 +21,6 @@ Data/WARLOCK.lua
 Data/DRUID.lua
 Core.lua
 UI/Window.lua
+UI/Options.lua
+
+
