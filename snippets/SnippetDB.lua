@@ -142,6 +142,19 @@ function db:ExpandConditionals(body, raceFile)
   return expanded
 end
 
+-- High-confidence off-GCD casts often prefixed before the bar spell; skip for tooltip icon.
+-- Keep in sync with docs/forever-offgcd-research.md (High rows only).
+local TOOLTIP_SKIP_CASTS = {
+  ["blood fury"] = true,
+  ["berserking"] = true,
+  ["eureka!"] = true,
+  ["bloodrage"] = true,
+  ["presence of mind"] = true,
+  ["inner focus"] = true,
+  ["nature's swiftness"] = true,
+  ["fel domination"] = true,
+}
+
 -- First /cast or /use spell name. Returns spell, useBareTooltip.
 -- Bare tooltip for castsequence, modifier/; multi-spell lines.
 local function extractPrimarySpell(body)
@@ -162,12 +175,16 @@ local function extractPrimarySpell(body)
       rest = string.gsub(rest, "^!+", "")
       -- Skip bare bag/slot numbers (trinkets etc.).
       if rest ~= "" and not string.match(rest, "^%d+$") then
-        return rest, false
+        -- Prefer the main CD/heal over High off-GCD prefixes on the same key.
+        if not TOOLTIP_SKIP_CASTS[string.lower(rest)] then
+          return rest, false
+        end
       end
     end
   end
   return nil, false
 end
+
 
 -- Ensure a leading #showtooltip line: spell name for /cast, bare for castsequence/mod macros.
 function db:EnsureShowTooltip(body)
