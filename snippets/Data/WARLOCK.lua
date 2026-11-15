@@ -79,3 +79,37 @@ Snippets.DB:Register("WARLOCK", {
   category = "pve",
   note = "Dest Bane of Havoc mouseover",
 })
+
+Snippets.DB:Register("WARLOCK", {
+  id = "warlock_aff_dots_seq",
+  name = "Aff DoTs",
+  icon = "Spell_Shadow_AbominationExplosion",
+  body = S.withBurstPrefix([[
+/petattack
+/castsequence reset=target/combat Corruption, Bane of Agony, Siphon Life
+]]),
+  category = "pve",
+  note = "Trinkets + racial burst + pet; Aff DoTs reset target/combat",
+})
+
+Snippets.DB:Register("WARLOCK", {
+  id = "warlock_immol_conflag",
+  name = "Immol Conflag",
+  icon = "Spell_Fire_Fireball",
+  body = S.withBurstPrefix([[
+/castsequence reset=target Immolate, Conflagrate
+]]),
+  category = "pve",
+  note = "Trinkets + racial burst; Dest Immolate then Conflagrate",
+})
+
+Snippets.DB:Register("WARLOCK", {
+  id = "warlock_demo_sac_imp",
+  name = "Demo Sac Imp",
+  icon = "Spell_Shadow_Metamorphosis",
+  body = [[
+/castsequence reset=60 Demonic Sacrifice, Fel Domination, Summon Imp
+]],
+  category = "pve",
+  note = "Demo Demonic Pact: sacrifice, Fel Domination, Imp (no burst prefix)",
+})

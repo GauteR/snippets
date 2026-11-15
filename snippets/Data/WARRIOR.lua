@@ -59,3 +59,17 @@ Snippets.DB:Register("WARRIOR", {
   category = "pve",
   note = "Trinkets, racial burst, Bloodrage → Bloodthirst",
 })
+
+Snippets.DB:Register("WARRIOR", {
+  id = "warrior_rend_hs_seq",
+  name = "Rend HS",
+  icon = "Ability_Gouge",
+  body = S.withBurstPrefix([[
+/cast Bloodrage
+/startattack
+/castsequence reset=combat Rend, Heroic Strike
+]]),
+  category = "pve",
+  note = "Trinkets + racial + Bloodrage; Rend then Heroic Strike, reset combat",
+})
+
