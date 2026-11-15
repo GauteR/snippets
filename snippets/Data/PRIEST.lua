@@ -24,6 +24,17 @@ Snippets.DB:Register("PRIEST", {
 })
 
 Snippets.DB:Register("PRIEST", {
+  id = "priest_cure_disease_mo",
+  name = "Cure Disease",
+  icon = "Spell_Holy_NullifyDisease",
+  body = [[
+/cast [mod:shift,@mouseover,help,nodead][mod:shift,help,nodead][mod:shift,@player] Abolish Disease; [@mouseover,help,nodead][help,nodead][@player] Cure Disease
+]],
+  category = "general",
+  note = "Cure Disease; Shift Abolish Disease (mouseover / target / self)",
+})
+
+Snippets.DB:Register("PRIEST", {
   id = "priest_pws_mo",
   name = "PWS MO",
   icon = "Spell_Holy_PowerWordShield",

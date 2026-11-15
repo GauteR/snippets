@@ -69,3 +69,14 @@ Snippets.DB:Register("SHAMAN", {
   category = "pve",
   note = "Racial burst + Nature's Swiftness → Healing Wave",
 })
+
+Snippets.DB:Register("SHAMAN", {
+  id = "shaman_cure_key",
+  name = "Cure Key",
+  icon = "Spell_Nature_NullifyPoison",
+  body = [[
+/cast [mod:shift,@mouseover,help,nodead][mod:shift,help,nodead][mod:shift,@player] Cure Disease; [@mouseover,help,nodead][help,nodead][@player] Cure Poison
+]],
+  category = "general",
+  note = "Cure Poison; Shift Cure Disease (mouseover / target / self)",
+})

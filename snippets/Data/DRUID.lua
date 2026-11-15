@@ -103,3 +103,16 @@ Snippets.DB:Register("DRUID", {
   category = "pve",
   note = "Combat rez mouseover",
 })
+
+-- Compact mouseover/@player (no mid help-tier) so body + #showtooltip stays ≤ 255.
+Snippets.DB:Register("DRUID", {
+  id = "druid_cure_key",
+  name = "Cure Key",
+  icon = "Spell_Nature_RemoveCurse",
+  body = [[
+/cancelform
+/cast [mod:alt,@mouseover,help,nodead][mod:alt,@player] Abolish Poison; [mod:shift,@mouseover,help,nodead][mod:shift,@player] Cure Poison; [@mouseover,help,nodead][@player] Remove Curse
+]],
+  category = "general",
+  note = "Leave form; Remove Curse; Shift Cure Poison; Alt Abolish Poison (mouseover or self)",
+})
