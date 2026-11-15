@@ -2,9 +2,9 @@
 
 **Game:** World of Warcraft: Forever (not Vanilla / Classic Era).  
 **Spell names:** English Forever client.  
-**Purpose:** Reference of *common* general and per-class macros for personal use and for filling Snippets templates later.
+**Purpose:** Reference of *common* general and per-class macros. Essentials are shipped as Snippets templates under [`snippets/Data/`](../snippets/Data/) (`GENERAL.lua` + per-class files). This doc also keeps **patterns** (`SPELL_NAME` placeholders) that are not registered as templates.
 
-Full curated sets (300+ macros) live at [wowclassicforever.info/macros](https://wowclassicforever.info/macros/) (built from Forever trainer data). This doc keeps the **patterns** and the **essentials** you usually put on bars first.
+Full curated sets (300+ macros) live at [wowclassicforever.info/macros](https://wowclassicforever.info/macros/) (built from Forever trainer data).
 
 ---
 
@@ -182,12 +182,11 @@ Sources: [Forever Paladin macros](https://wowclassicforever.info/macros/paladin/
 /cast [mod:shift] Consecration; Hammer of the Righteous
 ```
 
-**Divine Favor → Holy Light (off-GCD prefix where available):**
+**Divine Favor (GCD Unverified — do not stack heal on the same press):**
 
 ```
-#showtooltip Holy Light
+#showtooltip Divine Favor
 /cast Divine Favor
-/cast Holy Light
 ```
 
 ---
@@ -246,12 +245,11 @@ Sources: [Forever Rogue macros](https://wowclassicforever.info/macros/rogue/)
 /cast [nostealth] Stealth; Cheap Shot
 ```
 
-**Pick Pocket → Cheap Shot (Pick Pocket off-GCD on Forever guides):**
+**Pick Pocket (GCD Unverified — keep Cheap Shot on a separate key):**
 
 ```
-#showtooltip Cheap Shot
+#showtooltip Pick Pocket
 /cast Pick Pocket
-/cast Cheap Shot
 ```
 
 **Kick mouseover:**
@@ -268,12 +266,11 @@ Sources: [Forever Rogue macros](https://wowclassicforever.info/macros/rogue/)
 /cast [mod:shift] Slice and Dice; [mod:ctrl] Rupture; Eviscerate
 ```
 
-**Cold Blood → Eviscerate:**
+**Cold Blood (GCD Unverified — do not stack finisher on the same press):**
 
 ```
-#showtooltip Eviscerate
+#showtooltip Cold Blood
 /cast Cold Blood
-/cast Eviscerate
 ```
 
 **Mutilate (Forever Assassination):**
@@ -600,15 +597,27 @@ Sources: [Forever Druid macros](https://wowclassicforever.info/macros/druid/)
 
 ## Mapping to Snippets addon templates
 
-When you turn these into `Data/*.lua` bodies:
+Concrete essentials from this doc are registered in:
+
+| File | Contents |
+| --- | --- |
+| `Data/SHARED.lua` | Racial `{IF:…}` fragments + High off-GCD burst helpers |
+| `Data/GENERAL.lua` | Trinkets + racial burst for every class |
+| `Data/WARRIOR.lua` … `Data/DRUID.lua` | Per-class essentials (High off-GCD prefixes where researched) |
+
+`#showtooltip` is added at expand/create time (`EnsureShowTooltip`). Bodies in Data files omit it.
+
+**Off-GCD stacking (High only):** trinkets, Orc/Troll/Gnome racial burst, Bloodrage, Presence of Mind, Inner Focus, Nature's Swiftness, Fel Domination, pet commands. Unverified CDs (Divine Favor, Cold Blood, Arcane Power, …) are not treated as free prefixes — see [`forever-offgcd-research.md`](forever-offgcd-research.md).
+
 
 | Idea | Snippets template tip |
 | --- | --- |
-| Trinkets | `{TRINKET1}` / `{TRINKET2}` (when placeholders are implemented) or raw `/use 13` |
+| Trinkets | `/use 13` / `/use 14` (see `GENERAL.lua`) |
 | Race lines | `{IF:ORC=/cast Blood Fury\|TROLL=/cast Berserking\|GNOME=/cast Eureka!}` |
-| Mute | `{MUTE_SFX}` … `{/MUTE_SFX}` or raw `SetCVar` lines |
-| Icon | Always `#showtooltip` + `?` icon |
+| Mute / SPELL_NAME patterns | Keep as doc patterns; not registered |
+| Icon | `?` icon at create + `#showtooltip` |
 | Category | `general` / `pve` / `pvp` |
+
 
 ---
 

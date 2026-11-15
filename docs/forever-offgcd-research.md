@@ -174,6 +174,6 @@ For every candidate spell:
 
 ## Status
 
-- Research only; no Snippets addon implementation.
+- **High** prefixes are wired into Snippets templates via `Data/SHARED.lua` helpers (`withBurstPrefix` / `withRacialBurst`) and per-class Data files. **Unverified** CDs are not stacked as free GCD on the same press.
 - Full class-by-class **verified** off-GCD map for Forever is **incomplete** until in-game / Wowhead Forever GCD fields are walked systematically.
 - Next research step: export Forever spells with `GCD == 0` from ForeverDB/MetaForge/wago for the current build, then validate the High list and fill Unverified rows.
