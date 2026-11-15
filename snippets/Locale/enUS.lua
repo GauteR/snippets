@@ -15,12 +15,14 @@ L.FILTER_PVE = "PvE"
 L.FILTER_PVP = "PvP"
 L.PREVIEW_LABEL = "Preview"
 L.CREATE_MACRO = "Create Macro"
+L.MAINTAIN_LABEL = "Maintain (re-sync from template)"
 
 L.STATUS_NO_SNIPPETS = "No snippets registered for this class."
 L.STATUS_SNIPPETS_AVAILABLE_FMT = "%d snippet(s) available."
 L.STATUS_SELECT_FIRST = "Select a snippet first."
 L.STATUS_CREATE_FAILED = "Failed to create macro."
 L.STATUS_CREATED_FMT = "Created macro: %s"
+L.STATUS_CREATED_MAINTAIN_FMT = "Created maintained macro: %s"
 
 L.ERR_IN_COMBAT = "Cannot create macros while in combat."
 L.ERR_NO_SNIPPET = "No snippet selected."
@@ -35,7 +37,7 @@ L.CHAT_LOADED = "Loaded. Type /snippets to open the snippet browser."
 
 L.OPTIONS_VERSION_FMT = "Version %s"
 L.OPTIONS_HELP =
-  "Browse class macro templates with /snippets, filter PvE or PvP, then Create Macro."
+  "Browse class macro templates with /snippets, filter PvE or PvP, then Create Macro. Enable Maintain only when the preview is unchanged to re-sync from the template when spells are learned."
 L.OPTIONS_OPEN = "Open Snippets"
 
 -- Resolve a locale key; optional format args.
