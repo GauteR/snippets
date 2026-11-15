@@ -13,12 +13,16 @@ Open a browser with `/snippets`, pick a template for your current class, and cli
 
 ## Features
 
+- UI strings live in `Locale/enUS.lua` (`Snippets:T("KEY")`)
+- Options → AddOns → Snippets panel (version, help text, open button)
 - Template database of macro snippets, one data file per class
 - List filtered automatically to the logged-in character’s class (`UnitClass`)
 - PvE / PvP filter buttons (`general` snippets appear in both)
 - Race conditionals in template bodies (`{IF:…}`) expanded from `UnitRace`
 - Preview pane shows the expanded macro (editable before create)
-- **Create Macro** uses `CreateMacro` (character macros by default)
+- Bodies always get `#showtooltip` with the primary `/cast` spell (bare `#showtooltip` for `/castsequence`)
+- **Create Macro** uses `CreateMacro` with the `?` icon (character macros by default)
+
 - Feature flag (`ENABLED`) to disable the whole UI without removing the addon
 - Pure Lua unit tests for the snippet registry helpers
 
@@ -41,9 +45,9 @@ Open a browser with `/snippets`, pick a template for your current class, and cli
 5. Check the **Preview** pane — `{IF:…}` blocks are already expanded for your race (you can still edit).
 6. Click **Create Macro** — the macro body is taken from the preview contents.
 
-The new macro appears in the normal Blizzard macro UI. Creation is blocked while in combat. If a name is already taken, a numeric suffix is added (`Charge`, `Charge 2`, …). Names are limited to 16 characters; bodies to 255 characters (newlines count).
+The new macro appears in the Blizzard macro UI (opened automatically on create, character tab when `PER_CHARACTER` is on). Creation is blocked while in combat. If a name is already taken, a numeric suffix is added (`Charge`, `Charge 2`, …). Names are limited to 16 characters; bodies to 255 characters (newlines count).
 
-Close the window with **Close**, the frame’s X, or Escape (`UISpecialFrames`).
+Close the Snippets window with the frame’s X or Escape (`UISpecialFrames`).
 
 ## Configuration
 
@@ -56,6 +60,7 @@ Edit [`snippets/Config.lua`](snippets/Config.lua):
 | `MAX_BODY_LENGTH` | `255` | Client macro body limit. |
 | `MAX_NAME_LENGTH` | `16` | Client macro name limit. |
 | `ADDON_NAME` | `"Snippets"` | Display name used by the addon. |
+| `VERSION` | `"1.1.0"` | Options panel version when TOC `@project-version@` is not packaged yet. |
 | `SLASH_COMMAND` | `"/snippets"` | Documented slash command (registration is in `Core.lua`). |
 | `DEFAULT_FILTER` | `"pve"` | Initial list filter: `"pve"` or `"pvp"`. |
 
@@ -129,6 +134,8 @@ See `Data/WARRIOR.lua` (`warrior_charge`) for a fuller example.
 | [`docs/INSTALL.md`](docs/INSTALL.md) | Short install guide |
 | [`docs/RELEASE.md`](docs/RELEASE.md) | Local packager / CurseForge–Wago release |
 | [`docs/CURSEFORGE.md`](docs/CURSEFORGE.md) | User-facing CurseForge / Wago description (when published) |
+| [`docs/MACROS.md`](docs/MACROS.md) | Forever-first common macros (general + all classes) |
+| [`docs/forever-offgcd-research.md`](docs/forever-offgcd-research.md) | Off-GCD stacking research for Forever |
 
 ## Local Forever install (dev)
 
@@ -163,6 +170,8 @@ snippets/                 # Addon folder (copy this to Interface/AddOns)
   SnippetDB.lua
   Core.lua
   UI/Window.lua
+  Locale/enUS.lua         # UI strings (English)
+  UI/Options.lua          # Options → AddOns → Snippets
   Data/*.lua              # Per-class templates (may include {IF:...} blocks)
 .pkgmeta                  # BigWigs packager ignore / package-as
 .release/release.sh       # Pinned BigWigs packager (v2.7.0)
@@ -207,7 +216,8 @@ Coverage includes class filtering, PvE/PvP category filtering, unique macro name
 - [ ] PvE filter shows `general` + `pve`; PvP filter shows `general` + `pvp`.
 - [ ] Preview expands `{IF:…}` for the current race and drops unmatched branches.
 - [ ] Preview shows single-line and multiline bodies.
-- [ ] **Create Macro** creates a usable character macro.
+- [ ] **Create Macro** creates a usable character macro and opens the Blizzard macro UI (character tab when configured).
+- [ ] Snippets window has no bottom Close button; X / Escape still close it.
 - [ ] Creating the same snippet twice gets a unique name suffix.
 - [ ] In combat, creation fails with a clear status message.
 - [ ] `ENABLED = false` disables slash/UI after `/reload`.

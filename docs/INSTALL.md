@@ -10,7 +10,7 @@ Class-filtered macro snippet templates. Open with `/snippets`, select a snippet,
 
 2. Restart the client or log out and back in.
 3. Enable **Snippets** on the addon list if it is disabled.
-4. Type `/snippets` in chat (or the value of `Snippets.Config.SLASH_COMMAND`).
+4. Type `/snippets` in chat (or the value of `Snippets.Config.SLASH_COMMAND`), or open **Options → AddOns → Snippets** and click **Open Snippets**.
 
 ### Publish from this repo (developers)
 
@@ -28,7 +28,7 @@ Optional: `-Destination` / `--destination "…\Interface\AddOns"`, or set `SNIPP
 
 Then `/reload` in-game.
 
-The preview pane is editable; **Create Macro** uses the preview text.
+The preview pane is editable; **Create Macro** uses the preview text and opens the Blizzard macro UI.
 
 ## Configuration
 

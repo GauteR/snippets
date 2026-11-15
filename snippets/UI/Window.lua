@@ -7,6 +7,30 @@ local ROW_HEIGHT = 20
 local VISIBLE_ROWS = 8
 local LIST_HEIGHT = VISIBLE_ROWS * ROW_HEIGHT
 
+-- Dark inset panel so list/preview contrast against BasicFrameTemplateWithInset.
+local function CreateContrastPanel(name, parent)
+  local ok, panel = pcall(CreateFrame, "Frame", name, parent, "BackdropTemplate")
+  if not ok or not panel then
+    panel = CreateFrame("Frame", name, parent)
+  end
+  if panel.SetBackdrop then
+    panel:SetBackdrop({
+      bgFile = "Interface\\Buttons\\WHITE8X8",
+      edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+      edgeSize = 12,
+      insets = { left = 3, right = 3, top = 3, bottom = 3 },
+    })
+    panel:SetBackdropColor(0.05, 0.06, 0.09, 0.92)
+    panel:SetBackdropBorderColor(0.45, 0.45, 0.5, 0.95)
+  else
+    local bg = panel:CreateTexture(nil, "BACKGROUND")
+    bg:SetAllPoints()
+    bg:SetColorTexture(0.05, 0.06, 0.09, 0.92)
+  end
+  return panel
+end
+
+
 function UI:Initialize()
   if self.frame then
     return
@@ -25,16 +49,16 @@ function UI:Initialize()
 
   frame.title = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
   frame.title:SetPoint("TOP", 0, -5)
-  frame.title:SetText("Snippets")
+  frame.title:SetText(Snippets:T("WINDOW_TITLE"))
 
   frame.classLabel = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
   frame.classLabel:SetPoint("TOPLEFT", 16, -32)
-  frame.classLabel:SetText("Class / Race:")
+  frame.classLabel:SetText(Snippets:T("CLASS_RACE_LABEL"))
 
   local pveButton = CreateFrame("Button", "SnippetsFilterPveButton", frame, "UIPanelButtonTemplate")
   pveButton:SetSize(60, 22)
   pveButton:SetPoint("TOPLEFT", 16, -52)
-  pveButton:SetText("PvE")
+  pveButton:SetText(Snippets:T("FILTER_PVE"))
   pveButton:SetScript("OnClick", function()
     UI:SetFilter("pve")
   end)
@@ -42,34 +66,60 @@ function UI:Initialize()
   local pvpButton = CreateFrame("Button", "SnippetsFilterPvpButton", frame, "UIPanelButtonTemplate")
   pvpButton:SetSize(60, 22)
   pvpButton:SetPoint("LEFT", pveButton, "RIGHT", 8, 0)
-  pvpButton:SetText("PvP")
+  pvpButton:SetText(Snippets:T("FILTER_PVP"))
   pvpButton:SetScript("OnClick", function()
     UI:SetFilter("pvp")
   end)
 
   frame.listLabel = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
   frame.listLabel:SetPoint("TOPLEFT", 16, -78)
-  frame.listLabel:SetText("Snippets")
+  frame.listLabel:SetText(Snippets:T("LIST_LABEL"))
+
+
+  local listPanel = CreateContrastPanel("SnippetsListPanel", frame)
+  listPanel:SetPoint("TOPLEFT", 12, -90)
+  listPanel:SetPoint("TOPRIGHT", -12, -90)
+  listPanel:SetHeight(LIST_HEIGHT + 12)
 
   -- Explicit list height so the preview pane keeps usable space for multiline bodies.
-  local scrollFrame = CreateFrame("ScrollFrame", "SnippetsScrollFrame", frame, "UIPanelScrollFrameTemplate")
-  scrollFrame:SetPoint("TOPLEFT", 16, -94)
-  scrollFrame:SetPoint("TOPRIGHT", -36, -94)
-  scrollFrame:SetHeight(LIST_HEIGHT)
+  local scrollFrame = CreateFrame("ScrollFrame", "SnippetsScrollFrame", listPanel, "UIPanelScrollFrameTemplate")
+  scrollFrame:SetPoint("TOPLEFT", 8, -6)
+  scrollFrame:SetPoint("BOTTOMRIGHT", -28, 6)
 
   local content = CreateFrame("Frame", "SnippetsScrollChild", scrollFrame)
   content:SetSize(360, LIST_HEIGHT)
   scrollFrame:SetScrollChild(content)
 
   frame.previewLabel = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-  frame.previewLabel:SetPoint("TOPLEFT", scrollFrame, "BOTTOMLEFT", 0, -12)
-  frame.previewLabel:SetText("Preview (race conditionals expanded; editable)")
+  frame.previewLabel:SetPoint("TOPLEFT", listPanel, "BOTTOMLEFT", 4, -10)
+  frame.previewLabel:SetText(Snippets:T("PREVIEW_LABEL"))
 
-  local preview = CreateFrame("EditBox", "SnippetsPreviewBox", frame)
+
+  local createButton = CreateFrame("Button", "SnippetsCreateButton", frame, "UIPanelButtonTemplate")
+  createButton:SetSize(140, 24)
+  createButton:SetPoint("BOTTOMLEFT", 16, 12)
+  createButton:SetText(Snippets:T("CREATE_MACRO"))
+  createButton:SetScript("OnClick", function()
+    UI:CreateSelected()
+  end)
+
+  -- Status sits on the footer row next to Create Macro (not under the preview panel).
+  frame.status = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+  frame.status:SetPoint("LEFT", createButton, "RIGHT", 12, 0)
+  frame.status:SetPoint("RIGHT", frame, "RIGHT", -16, 0)
+  frame.status:SetJustifyH("LEFT")
+  frame.status:SetText("")
+
+  local previewPanel = CreateContrastPanel("SnippetsPreviewPanel", frame)
+  previewPanel:SetPoint("TOPLEFT", frame.previewLabel, "BOTTOMLEFT", -4, -4)
+  -- Leave clear space for the footer button + status row.
+  previewPanel:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -12, 48)
+
+  local preview = CreateFrame("EditBox", "SnippetsPreviewBox", previewPanel)
   preview:SetMultiLine(true)
   preview:SetFontObject(GameFontHighlightSmall)
-  preview:SetPoint("TOPLEFT", frame.previewLabel, "BOTTOMLEFT", 0, -4)
-  preview:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -16, 48)
+  preview:SetPoint("TOPLEFT", 8, -8)
+  preview:SetPoint("BOTTOMRIGHT", -8, 8)
   preview:SetAutoFocus(false)
   preview:EnableMouse(true)
   preview:SetScript("OnEscapePressed", function(self)
@@ -77,31 +127,6 @@ function UI:Initialize()
   end)
   preview:SetText("")
 
-  local previewBg = frame:CreateTexture(nil, "BACKGROUND")
-  previewBg:SetAllPoints(preview)
-  previewBg:SetColorTexture(0, 0, 0, 0.35)
-
-  local createButton = CreateFrame("Button", "SnippetsCreateButton", frame, "UIPanelButtonTemplate")
-  createButton:SetSize(140, 24)
-  createButton:SetPoint("BOTTOMLEFT", 16, 12)
-  createButton:SetText("Create Macro")
-  createButton:SetScript("OnClick", function()
-    UI:CreateSelected()
-  end)
-
-  local closeButton = CreateFrame("Button", "SnippetsCloseButton", frame, "UIPanelButtonTemplate")
-  closeButton:SetSize(80, 24)
-  closeButton:SetPoint("BOTTOMRIGHT", -16, 12)
-  closeButton:SetText("Close")
-  closeButton:SetScript("OnClick", function()
-    frame:Hide()
-  end)
-
-  frame.status = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-  frame.status:SetPoint("BOTTOMLEFT", createButton, "TOPLEFT", 0, 6)
-  frame.status:SetPoint("RIGHT", closeButton, "LEFT", -8, 0)
-  frame.status:SetJustifyH("LEFT")
-  frame.status:SetText("")
 
   self.frame = frame
   self.scrollFrame = scrollFrame
@@ -206,8 +231,9 @@ function UI:Refresh()
   local classFile = Snippets:GetPlayerClassFile()
   local raceFile = Snippets:GetPlayerRaceFile()
   self.frame.classLabel:SetText(
-    string.format("Class / Race: %s / %s", classFile or "UNKNOWN", raceFile or "UNKNOWN")
+    Snippets:T("CLASS_RACE_FMT", classFile or Snippets:T("UNKNOWN"), raceFile or Snippets:T("UNKNOWN"))
   )
+
   self.filterMode = self.filterMode or "pve"
   self:UpdateFilterButtons()
   self.snippets = Snippets:GetSnippetsForPlayer(self.filterMode)
@@ -229,17 +255,17 @@ function UI:Refresh()
   if #self.snippets == 0 then
     self:SelectIndex(nil)
     self.preview:SetText("")
-    self:SetStatus("No snippets registered for this class.")
+    self:SetStatus(Snippets:T("STATUS_NO_SNIPPETS"))
   else
     self:SelectIndex(1)
-    self:SetStatus(#self.snippets .. " snippet(s) available.")
+    self:SetStatus(Snippets:T("STATUS_SNIPPETS_AVAILABLE_FMT", #self.snippets))
   end
 end
 
 function UI:CreateSelected()
   local snippet = self.snippets[self.selectedIndex]
   if not snippet then
-    self:SetStatus("Select a snippet first.")
+    self:SetStatus(Snippets:T("STATUS_SELECT_FIRST"))
     return
   end
 
@@ -254,11 +280,12 @@ function UI:CreateSelected()
 
   local macroId, err, name = Snippets:CreateMacroFromSnippet(draft)
   if not macroId then
-    self:SetStatus(err or "Failed to create macro.")
+    self:SetStatus(err or Snippets:T("STATUS_CREATE_FAILED"))
     return
   end
 
-  self:SetStatus("Created macro: " .. (name or snippet.name))
+  self:SetStatus(Snippets:T("STATUS_CREATED_FMT", name or snippet.name))
+  Snippets:OpenMacroFrame(macroId)
 end
 
 function UI:Toggle()
