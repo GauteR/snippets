@@ -12,6 +12,18 @@ Class-filtered macro snippet templates. Open with `/snippets`, select a snippet,
 3. Enable **Snippets** on the addon list if it is disabled.
 4. Type `/snippets` in chat (or the value of `Snippets.Config.SLASH_COMMAND`).
 
+### Publish from this repo (developers)
+
+Copy the addon into your local Forever AddOns folder:
+
+```powershell
+.\scripts\publish-local.ps1
+```
+
+Optional: `-Destination "D:\World of Warcraft\_forever_\Interface\AddOns"`, or set `SNIPPETS_FOREVER_ADDONS`, or copy `scripts/forever-addons.path.example` to `scripts/forever-addons.path`.
+
+Then `/reload` in-game.
+
 The preview pane is editable; **Create Macro** uses the preview text.
 
 ## Configuration
