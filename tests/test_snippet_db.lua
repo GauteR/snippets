@@ -269,6 +269,54 @@ assert_eq(tipPom, "#showtooltip Pyroblast\n/cast Eureka!\n/cast Presence of Mind
 local tipOnlyPrefix = Snippets.DB:EnsureShowTooltip("/cast Blood Fury")
 assert_eq(tipOnlyPrefix, "#showtooltip\n/cast Blood Fury", "EnsureShowTooltip is bare when only High prefix remains")
 
+-- FilterUnknownOffGcdCasts: drop High off-GCD /cast lines when spell is unknown.
+local filterBody = "/use 13\n/use 14\n/cast Blood Fury\n/cast Presence of Mind\n/cast Pyroblast"
+local knownNone = function(spell)
+  return false
+end
+local filteredNone = Snippets.DB:FilterUnknownOffGcdCasts(filterBody, knownNone)
+assert_eq(
+  filteredNone,
+  "/use 13\n/use 14\n/cast Pyroblast",
+  "FilterUnknownOffGcdCasts drops unknown High off-GCD casts, keeps trinkets and main spell"
+)
+
+local knownPom = function(spell)
+  return string.lower(spell) == "presence of mind"
+end
+local filteredPom = Snippets.DB:FilterUnknownOffGcdCasts(filterBody, knownPom)
+assert_eq(
+  filteredPom,
+  "/use 13\n/use 14\n/cast Presence of Mind\n/cast Pyroblast",
+  "FilterUnknownOffGcdCasts keeps known High off-GCD casts"
+)
+
+local knownAll = function()
+  return true
+end
+assert_eq(
+  Snippets.DB:FilterUnknownOffGcdCasts(filterBody, knownAll),
+  filterBody,
+  "FilterUnknownOffGcdCasts keeps all lines when every High cast is known"
+)
+
+local condLine = "/cast [@player] Inner Focus\n/cast Flash Heal"
+assert_eq(
+  Snippets.DB:FilterUnknownOffGcdCasts(condLine, knownNone),
+  "/cast Flash Heal",
+  "FilterUnknownOffGcdCasts strips High cast with conditionals when unknown"
+)
+
+local rawBurst = "{IF:ORC=/cast Blood Fury|GNOME=/cast Eureka!}\n/cast Presence of Mind\n/cast Pyroblast"
+local afterIf = Snippets.DB:ExpandConditionals(rawBurst, "Orc")
+local afterFilter = Snippets.DB:FilterUnknownOffGcdCasts(afterIf, knownNone)
+local afterTip = Snippets.DB:EnsureShowTooltip(afterFilter)
+assert_eq(
+  afterTip,
+  "#showtooltip Pyroblast\n/cast Pyroblast",
+  "Expand pipeline drops unknown Blood Fury and PoM for Orc"
+)
+
 -- Curing templates from Data/*.lua (Shared required by class files).
 dofile(addonRoot .. "/Data/SHARED.lua")
 dofile(addonRoot .. "/Data/DRUID.lua")
