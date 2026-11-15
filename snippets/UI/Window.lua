@@ -221,7 +221,8 @@ function UI:UpdateMaintainAvailability()
     return
   end
 
-  local maintainFeature = Snippets:IsMaintainEnabled and Snippets:IsMaintainEnabled()
+  -- Dot for existence check; colon for method call (Lua requires args after :).
+  local maintainFeature = Snippets.IsMaintainEnabled and Snippets:IsMaintainEnabled()
   if not maintainFeature then
     self.maintainCheck:SetChecked(false)
     self.maintainCheck:Disable()

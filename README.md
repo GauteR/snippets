@@ -208,6 +208,8 @@ README.md
 
 [`.luarc.json`](.luarc.json) whitelists WoW client globals (`CreateFrame`, `DEFAULT_CHAT_FRAME`, `CreateMacro`, …) so the language server does not report false “undefined global” warnings. Reload the Lua language server (or the editor window) after cloning if warnings linger.
 
+Existence checks on methods must use `.` (e.g. `Snippets.IsMaintainEnabled`), not `:`. A bare `Snippets:IsMaintainEnabled and …` is a parse error (`function arguments expected near 'and'`) because `:` always starts a method call.
+
 ## Tests
 
 Requires a local Lua interpreter (5.1+ / 5.4 is fine). From the repository root:
