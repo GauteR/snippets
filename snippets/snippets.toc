@@ -10,7 +10,10 @@
 Config.lua
 Locale/enUS.lua
 SnippetDB.lua
+Data/SHARED.lua
+Data/GENERAL.lua
 Data/WARRIOR.lua
+
 Data/PALADIN.lua
 Data/HUNTER.lua
 Data/ROGUE.lua
@@ -22,3 +25,4 @@ Data/DRUID.lua
 Core.lua
 UI/Window.lua
 UI/Options.lua
+
