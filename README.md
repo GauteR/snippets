@@ -20,6 +20,7 @@ Open a browser with `/snippets`, pick a template for your current class, and cli
 - PvE / PvP filter buttons (`general` snippets appear in both)
 - Race conditionals in template bodies (`{IF:…}`) expanded from `UnitRace`
 - Preview pane shows the expanded macro (editable before create)
+- Hover a list row to see the snippet `note` as a tooltip description
 - Bodies always get `#showtooltip` with the primary `/cast` spell (bare `#showtooltip` for `/castsequence`)
 - **Create Macro** uses `CreateMacro` with the `?` icon (character macros by default)
 - Options → AddOns → Snippets panel (icon, version, help text, open button)
@@ -41,7 +42,7 @@ Open a browser with `/snippets`, pick a template for your current class, and cli
 1. Log in on the character you want macros for.
 2. Run `/snippets`.
 3. Choose **PvE** or **PvP** (general templates stay visible in both).
-4. Select a snippet in the list.
+4. Select a snippet in the list (hover a row to read its description tooltip).
 5. Check the **Preview** pane — `{IF:…}` blocks are already expanded for your race (you can still edit).
 6. Click **Create Macro** — the macro body is taken from the preview contents.
 
@@ -87,7 +88,7 @@ Snippets.DB:Register("MAGE", {
 | `icon` | no | Icon token (defaults to `INV_Misc_QuestionMark`). |
 | `body` | yes | Macro text. Empty bodies cannot be created. |
 | `category` | no | `general` (default), `pve`, or `pvp`. `general` is shown under both filters. |
-| `note` | no | Author note (not shown in the UI yet). |
+| `note` | no | Author note shown as a tooltip when hovering the snippet in the list. |
 
 ### Multiline macros
 
@@ -221,6 +222,7 @@ Coverage includes class filtering, PvE/PvP category filtering, unique macro name
 - [ ] PvE filter shows `general` + `pve`; PvP filter shows `general` + `pvp`.
 - [ ] Preview expands `{IF:…}` for the current race and drops unmatched branches.
 - [ ] Preview shows single-line and multiline bodies.
+- [ ] Hovering a list row with a `note` shows a description tooltip; empty notes show no tooltip.
 - [ ] **Create Macro** creates a usable character macro and opens the Blizzard macro UI (character tab when configured).
 - [ ] Snippets window has no bottom Close button; X / Escape still close it.
 - [ ] Creating the same snippet twice gets a unique name suffix.
