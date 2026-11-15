@@ -1,0 +1,17 @@
+# Repo root is the VCS checkout; addon files live under snippets/.
+package-as: snippets
+
+move-folders:
+  snippets/snippets: snippets
+
+ignore:
+  - docs
+  - tests
+  - reports
+  - scripts
+  - README.md
+  - .luarc.json
+  - .github
+  - CHANGELOG.md
+
+enable-nolib-creation: no

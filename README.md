@@ -9,7 +9,7 @@ Open a browser with `/snippets`, pick a template for your current class, and cli
 | Interface | `16001` (Forever / build line 1.60.x) |
 | Slash command | `/snippets` |
 | Language | English (UI, docs, and data) |
-| Version | 1.0.0 |
+| Version | From git tag via `@project-version@` in TOC (see [`docs/RELEASE.md`](docs/RELEASE.md)) |
 
 ## Features
 
@@ -122,6 +122,38 @@ body = [[
 
 See `Data/WARRIOR.lua` (`warrior_charge`) for a fuller example.
 
+## Documentation
+
+| Doc | Contents |
+| --- | --- |
+| [`docs/INSTALL.md`](docs/INSTALL.md) | Short install guide |
+| [`docs/RELEASE.md`](docs/RELEASE.md) | Local packager / CurseForge–Wago release |
+| [`docs/CURSEFORGE.md`](docs/CURSEFORGE.md) | User-facing CurseForge / Wago description (when published) |
+
+## Local Forever install (dev)
+
+```powershell
+.\scripts\publish-local.ps1
+```
+
+```bash
+./scripts/publish-local.sh
+```
+
+Copies `snippets/` into your Forever `Interface\AddOns` folder (auto-detects common Forever paths when present). Override with `-Destination` / `--destination`, `SNIPPETS_FOREVER_ADDONS`, or `scripts/forever-addons.path`. Then `/reload` in-game.
+
+## Release (local)
+
+```powershell
+.\scripts\release.ps1 -DryRun
+```
+
+```bash
+./scripts/release.sh --dry-run
+```
+
+Requires bash (Git Bash on Windows) and `lua` on PATH. See [`docs/RELEASE.md`](docs/RELEASE.md). Add `X-Curse-Project-ID` / `X-Wago-ID` to the TOC only when those projects exist.
+
 ## Project layout
 
 ```
@@ -132,7 +164,14 @@ snippets/                 # Addon folder (copy this to Interface/AddOns)
   Core.lua
   UI/Window.lua
   Data/*.lua              # Per-class templates (may include {IF:...} blocks)
+.pkgmeta                  # BigWigs packager ignore / package-as
+.release/release.sh       # Pinned BigWigs packager (v2.7.0)
+scripts/release.ps1       # Tests + package (+ optional upload) — Windows
+scripts/release.sh        # Same as release.ps1 — bash / Git Bash / macOS / Linux
+scripts/publish-local.ps1 # Copy addon into local Forever AddOns
+scripts/publish-local.sh  # Same as publish-local.ps1 — bash
 docs/INSTALL.md           # Short install guide
+docs/RELEASE.md           # Release instructions
 tests/test_snippet_db.lua # Unit tests (no WoW client required)
 .luarc.json               # LuaLS WoW globals
 README.md

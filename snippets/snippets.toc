@@ -2,8 +2,9 @@
 ## Title: Snippets
 ## Notes: Class-filtered macro snippet templates.
 ## Author: Neema
-## Version: 1.0.0
+## Version: @project-version@
 ## DefaultState: enabled
+
 
 Config.lua
 SnippetDB.lua
