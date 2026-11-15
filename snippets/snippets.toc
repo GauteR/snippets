@@ -8,6 +8,7 @@
 
 
 Config.lua
+Locale/enUS.lua
 SnippetDB.lua
 Data/WARRIOR.lua
 Data/PALADIN.lua

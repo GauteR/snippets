@@ -238,9 +238,32 @@ assert_eq(#roguePvp, 2, "PvP filter returns general + pvp")
 assert_eq(roguePvp[1].id, "rogue_general", "PvP filter keeps general")
 assert_eq(roguePvp[2].id, "rogue_pvp", "PvP filter includes pvp")
 
+-- EnsureShowTooltip
+local tipCast = Snippets.DB:EnsureShowTooltip("/cast Shield Block")
+assert_eq(tipCast, "#showtooltip Shield Block\n/cast Shield Block", "EnsureShowTooltip adds spell name for /cast")
+
+local tipCond = Snippets.DB:EnsureShowTooltip("/cast [@mouseover,harm,nodead][] Kick")
+assert_eq(tipCond, "#showtooltip Kick\n/cast [@mouseover,harm,nodead][] Kick", "EnsureShowTooltip strips conditionals for spell name")
+
+local tipSeq = Snippets.DB:EnsureShowTooltip("/castsequence reset=combat Immolate, Corruption, Shadow Bolt")
+assert_eq(tipSeq, "#showtooltip\n/castsequence reset=combat Immolate, Corruption, Shadow Bolt", "EnsureShowTooltip is bare for castsequence")
+
+local tipExisting = Snippets.DB:EnsureShowTooltip("#showtooltip Old\n/cast Frostbolt")
+assert_eq(tipExisting, "#showtooltip Frostbolt\n/cast Frostbolt", "EnsureShowTooltip replaces existing tooltip line")
+
+local tipMod = Snippets.DB:EnsureShowTooltip("/cast [mod:shift] Multi-Shot; Aimed Shot")
+assert_eq(tipMod, "#showtooltip\n/cast [mod:shift] Multi-Shot; Aimed Shot", "EnsureShowTooltip is bare for mod/; multi-spell lines")
+
+local tipBang = Snippets.DB:EnsureShowTooltip("/cast !Auto Shot")
+assert_eq(tipBang, "#showtooltip Auto Shot\n/cast !Auto Shot", "EnsureShowTooltip strips leading ! from spell name")
+
+local tipUseSlot = Snippets.DB:EnsureShowTooltip("/use 13\n/cast Bloodthirst")
+assert_eq(tipUseSlot, "#showtooltip Bloodthirst\n/use 13\n/cast Bloodthirst", "EnsureShowTooltip skips numeric /use slots")
+
 if failures > 0 then
   print(string.format("\n%d test(s) failed", failures))
   os.exit(1)
 end
 
 print("\nAll tests passed")
+

@@ -142,6 +142,61 @@ function db:ExpandConditionals(body, raceFile)
   return expanded
 end
 
+-- First /cast or /use spell name. Returns spell, useBareTooltip.
+-- Bare tooltip for castsequence, modifier/; multi-spell lines.
+local function extractPrimarySpell(body)
+  for line in string.gmatch(body .. "\n", "([^\r\n]*)\r?\n") do
+    local lower = string.lower(line)
+    if string.find(lower, "^%s*/castsequence") then
+      return nil, true
+    end
+    local rest = string.match(line, "^%s*/cast%s+(.+)$")
+      or string.match(line, "^%s*/use%s+(.+)$")
+    if rest then
+      -- Multi-spell / mod lines: bare #showtooltip (no wrong primary icon).
+      if string.find(rest, ";", 1, true) or string.find(lower, "%[mod:") then
+        return nil, true
+      end
+      rest = string.gsub(rest, "%b[]", "")
+      rest = string.match(rest, "^%s*(.-)%s*$") or rest
+      rest = string.gsub(rest, "^!+", "")
+      -- Skip bare bag/slot numbers (trinkets etc.).
+      if rest ~= "" and not string.match(rest, "^%d+$") then
+        return rest, false
+      end
+    end
+  end
+  return nil, false
+end
+
+-- Ensure a leading #showtooltip line: spell name for /cast, bare for castsequence/mod macros.
+function db:EnsureShowTooltip(body)
+  body = body or ""
+  body = string.gsub(body, "^%s*#showtooltip[^\r\n]*\r?\n?", "")
+  body = string.gsub(body, "\r?\n%s*#showtooltip[^\r\n]*", "")
+  body = string.gsub(body, "^\r?\n+", "")
+  body = string.gsub(body, "\r?\n+$", "")
+
+  local lowerBody = string.lower(body)
+  local tooltip
+  if string.find(lowerBody, "/castsequence") then
+    tooltip = "#showtooltip"
+  else
+    local spell, bare = extractPrimarySpell(body)
+    if bare or not spell then
+      tooltip = "#showtooltip"
+    else
+      tooltip = "#showtooltip " .. spell
+    end
+  end
+
+  if body == "" then
+    return tooltip
+  end
+  return tooltip .. "\n" .. body
+end
+
+
 -- Macro bodies are capped at 255 characters by the client.
 function db:ClampBody(body)
   body = body or ""

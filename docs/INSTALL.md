@@ -28,7 +28,7 @@ Optional: `-Destination` / `--destination "…\Interface\AddOns"`, or set `SNIPP
 
 Then `/reload` in-game.
 
-The preview pane is editable; **Create Macro** uses the preview text.
+The preview pane is editable; **Create Macro** uses the preview text and opens the Blizzard macro UI.
 
 ## Configuration
 

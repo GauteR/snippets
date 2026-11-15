@@ -18,6 +18,19 @@ local function GetMeta(field, fallback)
   return value
 end
 
+-- TOC keeps ## Version: @project-version@ for packager; show Config.VERSION until substituted.
+local function GetDisplayVersion()
+  local meta = GetMeta("Version", nil)
+  if meta and not string.find(meta, "@", 1, true) then
+    return meta
+  end
+  if Snippets.Config and Snippets.Config.VERSION then
+    return Snippets.Config.VERSION
+  end
+  return "?"
+end
+
+
 function Options:Initialize()
   if self.registered then
     return
@@ -27,7 +40,7 @@ function Options:Initialize()
   end
 
   local panel = CreateFrame("Frame", "SnippetsOptionsPanel")
-  panel.name = GetMeta("Title", "Snippets")
+  panel.name = GetMeta("Title", Snippets:T("ADDON_NAME"))
   panel:Hide()
 
   -- Required by the Settings canvas layout even when unused.
@@ -49,7 +62,8 @@ function Options:Initialize()
 
   local version = panel:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
   version:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -4)
-  version:SetText("Version " .. GetMeta("Version", "1.1.0"))
+  version:SetText(Snippets:T("OPTIONS_VERSION_FMT", GetDisplayVersion()))
+
 
   local help = panel:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
   help:SetPoint("TOPLEFT", icon, "BOTTOMLEFT", 0, -20)
@@ -57,17 +71,12 @@ function Options:Initialize()
   help:SetJustifyH("LEFT")
   help:SetJustifyV("TOP")
   help:SetWordWrap(true)
-  help:SetText(
-    "Browse class macro templates with /snippets, filter PvE or PvP, then Create Macro.\n\n"
-      .. "Templates may include race conditionals such as "
-      .. "{IF:DWARF=/cast Stoneform|GNOME=/cast Escape Artist}. "
-      .. "Unmatched races remove the block. Edit templates under Interface\\AddOns\\snippets\\Data\\."
-  )
+  help:SetText(Snippets:T("OPTIONS_HELP"))
 
   local openButton = CreateFrame("Button", "SnippetsOptionsOpenButton", panel, "UIPanelButtonTemplate")
   openButton:SetSize(160, 24)
   openButton:SetPoint("TOPLEFT", help, "BOTTOMLEFT", 0, -24)
-  openButton:SetText("Open Snippets")
+  openButton:SetText(Snippets:T("OPTIONS_OPEN"))
   openButton:SetScript("OnClick", function()
     if SettingsPanel and HideUIPanel then
       HideUIPanel(SettingsPanel)
