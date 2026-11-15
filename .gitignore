@@ -14,6 +14,6 @@ reports/
 scripts/forever-addons.path
 
 
-# Feature worktrees (do not commit)
+# Local git worktrees
 .worktree/
 

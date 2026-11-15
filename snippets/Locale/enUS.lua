@@ -15,12 +15,14 @@ L.FILTER_PVE = "PvE"
 L.FILTER_PVP = "PvP"
 L.PREVIEW_LABEL = "Preview"
 L.CREATE_MACRO = "Create Macro"
+L.MAINTAIN_LABEL = "Maintain (re-sync from template)"
 
 L.STATUS_NO_SNIPPETS = "No snippets registered for this class."
 L.STATUS_SNIPPETS_AVAILABLE_FMT = "%d snippet(s) available."
 L.STATUS_SELECT_FIRST = "Select a snippet first."
 L.STATUS_CREATE_FAILED = "Failed to create macro."
 L.STATUS_CREATED_FMT = "Created macro: %s"
+L.STATUS_CREATED_MAINTAIN_FMT = "Created maintained macro: %s"
 
 L.ERR_IN_COMBAT = "Cannot create macros while in combat."
 L.ERR_NO_SNIPPET = "No snippet selected."
@@ -28,6 +30,7 @@ L.ERR_EMPTY_BODY = "Snippet body is empty."
 L.ERR_CREATE_FAILED = "CreateMacro failed."
 L.ERR_SLOTS_FULL = "Macro slots may be full."
 L.ERR_BODY_TOO_LONG = "Macro body exceeds %d characters (including #showtooltip)."
+L.ERR_MAINTAIN_FAILED = "Failed to update maintained macro: %s"
 
 
 L.CHAT_DISABLED = "Addon is disabled."

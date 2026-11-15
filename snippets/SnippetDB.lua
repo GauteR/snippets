@@ -142,9 +142,8 @@ function db:ExpandConditionals(body, raceFile)
   return expanded
 end
 
--- Off-GCD / burst casts often prefixed before the bar spell; skip for tooltip icon.
--- High: Blood Fury, Berserking, Eureka!, Bloodrage, PoM, Inner Focus, NS, Fel Domination.
--- Unverified GCD (still skipped when used as Shared burst prefix): Elune's Light.
+-- High-confidence off-GCD casts often prefixed before the bar spell; skip for tooltip icon.
+-- Also optional in maintained macros until IsSpellKnown — keep in sync with forever-offgcd-research.md.
 local TOOLTIP_SKIP_CASTS = {
   ["blood fury"] = true,
   ["berserking"] = true,
@@ -156,6 +155,57 @@ local TOOLTIP_SKIP_CASTS = {
   ["nature's swiftness"] = true,
   ["fel domination"] = true,
 }
+
+-- True when spell name is a High off-GCD cast that may be gated on learn.
+function db:IsHighOffGcdCast(spellName)
+  if type(spellName) ~= "string" or spellName == "" then
+    return false
+  end
+  return TOOLTIP_SKIP_CASTS[string.lower(spellName)] == true
+end
+
+-- Extract spell name from a /cast line (strips conditionals and leading !).
+local function castSpellFromLine(line)
+  local rest = string.match(line, "^%s*/cast%s+(.+)$")
+  if not rest then
+    return nil
+  end
+  if string.find(rest, ";", 1, true) then
+    return nil
+  end
+  rest = string.gsub(rest, "%b[]", "")
+  rest = string.match(rest, "^%s*(.-)%s*$") or rest
+  rest = string.gsub(rest, "^!+", "")
+  if rest == "" or string.match(rest, "^%d+$") then
+    return nil
+  end
+  return rest
+end
+
+-- Remove High off-GCD /cast lines the player does not know yet.
+-- isKnown(spellName) → boolean; when nil, all High casts are kept (no client API).
+function db:FilterUnknownOffGcdCasts(body, isKnown)
+  body = body or ""
+  if type(isKnown) ~= "function" then
+    return body
+  end
+
+  local kept = {}
+  for line in string.gmatch(body .. "\n", "([^\r\n]*)\r?\n") do
+    local spell = castSpellFromLine(line)
+    if spell and self:IsHighOffGcdCast(spell) and not isKnown(spell) then
+      -- Drop unknown optional off-GCD prefix.
+    else
+      kept[#kept + 1] = line
+    end
+  end
+
+  local out = table.concat(kept, "\n")
+  out = string.gsub(out, "\n\n+", "\n")
+  out = string.gsub(out, "^\n+", "")
+  out = string.gsub(out, "\n+$", "")
+  return out
+end
 
 -- First /cast or /use spell name. Returns spell, useBareTooltip.
 -- Bare tooltip for castsequence, modifier/; multi-spell lines.

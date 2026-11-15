@@ -37,7 +37,7 @@ function UI:Initialize()
   end
 
   local frame = CreateFrame("Frame", "SnippetsFrame", UIParent, "BasicFrameTemplateWithInset")
-  frame:SetSize(420, 420)
+  frame:SetSize(420, 448)
   frame:SetPoint("CENTER")
   frame:SetMovable(true)
   frame:EnableMouse(true)
@@ -103,6 +103,15 @@ function UI:Initialize()
     UI:CreateSelected()
   end)
 
+  -- Maintain: re-sync from template; only when preview matches expanded template.
+  local maintainCheck = CreateFrame("CheckButton", "SnippetsMaintainCheck", frame, "UICheckButtonTemplate")
+  maintainCheck:SetPoint("BOTTOMLEFT", createButton, "TOPLEFT", -4, 6)
+  maintainCheck:SetSize(24, 24)
+  maintainCheck:SetChecked(false)
+  local maintainLabel = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+  maintainLabel:SetPoint("LEFT", maintainCheck, "RIGHT", 2, 0)
+  maintainLabel:SetText(Snippets:T("MAINTAIN_LABEL"))
+
   -- Status sits on the footer row next to Create Macro (not under the preview panel).
   frame.status = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
   frame.status:SetPoint("LEFT", createButton, "RIGHT", 12, 0)
@@ -112,8 +121,8 @@ function UI:Initialize()
 
   local previewPanel = CreateContrastPanel("SnippetsPreviewPanel", frame)
   previewPanel:SetPoint("TOPLEFT", frame.previewLabel, "BOTTOMLEFT", -4, -4)
-  -- Leave clear space for the footer button + status row.
-  previewPanel:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -12, 48)
+  -- Leave clear space for Maintain checkbox + footer button + status row.
+  previewPanel:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -12, 72)
 
   local preview = CreateFrame("EditBox", "SnippetsPreviewBox", previewPanel)
   preview:SetMultiLine(true)
@@ -125,6 +134,9 @@ function UI:Initialize()
   preview:SetScript("OnEscapePressed", function(self)
     self:ClearFocus()
   end)
+  preview:SetScript("OnTextChanged", function()
+    UI:UpdateMaintainAvailability()
+  end)
   preview:SetText("")
 
 
@@ -132,11 +144,14 @@ function UI:Initialize()
   self.scrollFrame = scrollFrame
   self.content = content
   self.preview = preview
+  self.maintainCheck = maintainCheck
+  self.maintainLabel = maintainLabel
   self.pveButton = pveButton
   self.pvpButton = pvpButton
   self.rows = {}
   self.selectedIndex = nil
   self.snippets = {}
+  self.canonicalPreview = ""
   local defaultFilter = (Snippets.Config and Snippets.Config.DEFAULT_FILTER) or "pve"
   if defaultFilter ~= "pve" and defaultFilter ~= "pvp" then
     defaultFilter = "pve"
@@ -181,8 +196,11 @@ function UI:SelectIndex(index)
   local snippet = self.snippets[index]
   if snippet and self.preview then
     -- Show the body after {IF:...} expansion for the current character race.
-    self.preview:SetText(Snippets:ExpandBodyForPlayer(snippet.body or ""))
+    local expanded = Snippets:ExpandBodyForPlayer(snippet.body or "")
+    self.canonicalPreview = expanded
+    self.preview:SetText(expanded)
   elseif self.preview then
+    self.canonicalPreview = ""
     self.preview:SetText("")
   end
 
@@ -191,6 +209,43 @@ function UI:SelectIndex(index)
       row:LockHighlight()
     else
       row:UnlockHighlight()
+    end
+  end
+
+  self:UpdateMaintainAvailability()
+end
+
+-- Maintain is only available when preview matches the expanded template (no manual edits).
+function UI:UpdateMaintainAvailability()
+  if not self.maintainCheck then
+    return
+  end
+
+  local maintainFeature = Snippets:IsMaintainEnabled and Snippets:IsMaintainEnabled()
+  if not maintainFeature then
+    self.maintainCheck:SetChecked(false)
+    self.maintainCheck:Disable()
+    self.maintainCheck:SetAlpha(0.4)
+    if self.maintainLabel then
+      self.maintainLabel:SetAlpha(0.4)
+    end
+    return
+  end
+
+  local previewText = self.preview and self.preview:GetText() or ""
+  local matchesCanonical = previewText == (self.canonicalPreview or "")
+  if matchesCanonical and self.selectedIndex and self.snippets[self.selectedIndex] then
+    self.maintainCheck:Enable()
+    self.maintainCheck:SetAlpha(1)
+    if self.maintainLabel then
+      self.maintainLabel:SetAlpha(1)
+    end
+  else
+    self.maintainCheck:SetChecked(false)
+    self.maintainCheck:Disable()
+    self.maintainCheck:SetAlpha(0.4)
+    if self.maintainLabel then
+      self.maintainLabel:SetAlpha(0.4)
     end
   end
 end
@@ -288,22 +343,47 @@ function UI:CreateSelected()
     return
   end
 
-  -- Create from the preview text so edits in the UI are applied.
-  local draft = {
-    id = snippet.id,
-    name = snippet.name,
-    icon = snippet.icon,
-    body = self.preview and self.preview:GetText() or snippet.body,
-    note = snippet.note,
-  }
+  self:UpdateMaintainAvailability()
+  local wantMaintain = self.maintainCheck
+    and self.maintainCheck:IsEnabled()
+    and self.maintainCheck:GetChecked()
+  wantMaintain = wantMaintain and Snippets:IsMaintainEnabled()
 
-  local macroId, err, name = Snippets:CreateMacroFromSnippet(draft)
+  local draft
+  local opts = {}
+  if wantMaintain then
+    -- Maintain always syncs from the raw template; ignore preview edits.
+    draft = {
+      id = snippet.id,
+      name = snippet.name,
+      icon = snippet.icon,
+      body = snippet.body,
+      note = snippet.note,
+    }
+    opts.maintain = true
+    opts.classFile = Snippets:GetPlayerClassFile()
+  else
+    -- Create from the preview text so edits in the UI are applied.
+    draft = {
+      id = snippet.id,
+      name = snippet.name,
+      icon = snippet.icon,
+      body = self.preview and self.preview:GetText() or snippet.body,
+      note = snippet.note,
+    }
+  end
+
+  local macroId, err, name = Snippets:CreateMacroFromSnippet(draft, opts)
   if not macroId then
     self:SetStatus(err or Snippets:T("STATUS_CREATE_FAILED"))
     return
   end
 
-  self:SetStatus(Snippets:T("STATUS_CREATED_FMT", name or snippet.name))
+  if wantMaintain then
+    self:SetStatus(Snippets:T("STATUS_CREATED_MAINTAIN_FMT", name or snippet.name))
+  else
+    self:SetStatus(Snippets:T("STATUS_CREATED_FMT", name or snippet.name))
+  end
   Snippets:OpenMacroFrame(macroId)
 end
 

@@ -16,6 +16,10 @@ Full curated sets (300+ macros) live at [wowclassicforever.info/macros](https://
 4. Use **`#showtooltip`** and the **`?` icon** so the bar shows the spell/item you cast.
 5. Forever renames / adds spells (examples: **Bane of Agony**, **Victory Rush**, **Penance**, **Call of the Elements**, **Holy Strike**, **Mutilate**). Do not paste Classic-only names blindly.
 
+### Snippets Maintain
+
+In `/snippets`, **Maintain** opts a macro into full re-sync from its raw template on login and `SPELLS_CHANGED`. The checkbox is disabled if the preview was edited. Opt-in state lives in per-character SavedVariables (`SnippetsDB`); missing macro slots drop their entries. High off-GCD `/cast` lines (Blood Fury, Presence of Mind, Inner Focus, …) are omitted until `IsSpellKnown` is true, then appear on the next maintain pass. Trinket `/use 13` / `/use 14` stay. Maintained bodies are overwritten on purpose; use a non-maintained create for one-off edits.
+
 ---
 
 ## General macros (all characters)

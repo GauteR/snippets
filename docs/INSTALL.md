@@ -89,9 +89,9 @@ Reload with `/reload` after editing data files.
 
 ## Notes for Forever
 
-- Snippet data lives in Lua files on purpose. Forever does not load SavedVariables after a cold start.
-- Macros created with **Create Macro** do persist across restarts.
-- Macro creation is blocked in combat.
+- Snippet templates live in Lua files. **Maintain** stores its opt-in list in per-character SavedVariables (`SnippetsDB`); Forever may not load SV after a cold start — the list is re-seeded on create/sync when SV is present. Missing macro slots drop their maintain entries.
+- Macros created with **Create Macro** do persist across restarts. Maintained macros are rewritten from the template on login and `SPELLS_CHANGED` (including newly learned High off-GCD spells).
+- Macro creation and `EditMacro` re-sync are blocked in combat (pending sync runs after combat).
 
 ## Editor (LuaLS)
 
