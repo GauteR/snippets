@@ -89,3 +89,14 @@ Snippets.DB:Register("MAGE", {
   category = "general",
   note = "Remove Lesser Curse mouseover / target / self; Shift self",
 })
+
+Snippets.DB:Register("MAGE", {
+  id = "mage_nova_lance_seq",
+  name = "Nova Lance",
+  icon = "Spell_Frost_FrostNova",
+  body = [[
+/castsequence reset=8 Frost Nova, Ice Lance
+]],
+  category = "pve",
+  note = "Frost Nova then Ice Lance; reset after 8s",
+})

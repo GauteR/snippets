@@ -641,6 +641,32 @@ Compact mouseover-or-self targeting (skips the mid `help,nodead` tier) so the bo
 
 ---
 
+## Cast sequences (fixed order)
+
+`/castsequence` advances one spell per successful press. Prefer Forever-sourced pairs/openers; keep long cooldowns out of the list so a resist does not strand the sequence. Bare `#showtooltip` (no spell name) is applied at create time.
+
+**Reset:** join with `/` — `target`, `combat`, seconds (`6`, `8`, `20`, `30`, `60`), or modifiers.
+
+**Burst prefix:** damage openers and heal sequences that benefit from crit (trinkets + racial burst, including Night Elf **Elune's Light** +10% crit) use `withBurstPrefix`. Utility/PvP pairs omit it. Demo Warlock sacrifice sequence keeps Fel Domination inside the list and has no extra burst prefix.
+
+| Class | Template id | Body idea |
+| --- | --- | --- |
+| Warlock Aff | `warlock_aff_dots_seq` | burst + `/petattack` + `reset=target/combat Corruption, Bane of Agony, Siphon Life` |
+| Warlock Dest | `warlock_immol_conflag` | burst + `reset=target Immolate, Conflagrate` |
+| Warlock Demo | `warlock_demo_sac_imp` | `reset=60 Demonic Sacrifice, Fel Domination, Summon Imp` |
+| Hunter | `hunter_mark_sting_seq` | burst + `/petattack` + `reset=target Hunter's Mark, Serpent Sting` |
+| Hunter Surv | `hunter_clip_kick_seq` | `reset=6 Wing Clip, Strider Kick` |
+| Hunter MM PvP | `hunter_scatter_trap_seq` | `reset=20 Scatter Shot, Freezing Trap` |
+| Rogue | `rogue_gouge_bs_seq` | `reset=6 Gouge, Backstab` |
+| Mage Frost | `mage_nova_lance_seq` | `reset=8 Frost Nova, Ice Lance` |
+| Paladin Holy | `paladin_vigil_shock_seq` | burst + mouseover/`@player` `reset=30 Light's Vigil, Holy Shock` |
+| Warrior | `warrior_rend_hs_seq` | burst + Bloodrage + `/startattack` + `reset=combat Rend, Heroic Strike` |
+| Druid | `druid_motw_thorns_seq` | `/cancelform` + `reset=10/target Mark of the Wild, Thorns` |
+
+Sources: [wowclassicforever.info macros](https://wowclassicforever.info/macros/), [wow-forever.gg macros](https://wow-forever.gg/guides/setup/macros/), [Undying Forever macros](https://undying.app/guides/macros). Use Forever names (**Bane of Agony**, not Curse of Agony).
+
+---
+
 ## Mapping to Snippets addon templates
 
 Concrete essentials from this doc are registered in:
@@ -653,13 +679,14 @@ Concrete essentials from this doc are registered in:
 
 `#showtooltip` is added at expand/create time (`EnsureShowTooltip`). Bodies in Data files omit it.
 
-**Off-GCD stacking (High only):** trinkets, Orc/Troll/Gnome racial burst, Bloodrage, Presence of Mind, Inner Focus, Nature's Swiftness, Fel Domination, pet commands. Unverified CDs (Divine Favor, Cold Blood, Arcane Power, …) are not treated as free prefixes — see [`forever-offgcd-research.md`](forever-offgcd-research.md).
+**Off-GCD stacking (High only):** trinkets, Orc/Troll/Gnome racial burst, Bloodrage, Presence of Mind, Inner Focus, Nature's Swiftness, Fel Domination, pet commands. **Elune's Light** is included in Shared racial burst for crit windows (damage and heals) but its GCD remains Unverified — see [`forever-offgcd-research.md`](forever-offgcd-research.md). Unverified CDs (Divine Favor, Cold Blood, Arcane Power, …) are not treated as free prefixes.
 
 
 | Idea | Snippets template tip |
 | --- | --- |
 | Trinkets | `/use 13` / `/use 14` (see `GENERAL.lua`) |
-| Race lines | `{IF:ORC=/cast Blood Fury\|TROLL=/cast Berserking\|GNOME=/cast Eureka!}` |
+| Race burst | `{IF:ORC=/cast Blood Fury\|TROLL=/cast Berserking\|GNOME=/cast Eureka!\|NIGHTELF=/cast Elune's Light}` |
+| Race defensive | `RACIAL_DEFENSIVE_IF`: Stoneform / Escape Artist / WotF / Shadowmeld / Will to Survive / War Stomp / Shatter Curse / Walk on Air; plus second block Perception / Read Ley Line / Skysight |
 | Mute / SPELL_NAME patterns | Keep as doc patterns; not registered |
 | Icon | `?` icon at create + `#showtooltip` |
 | Category | `general` / `pve` / `pvp` |

@@ -107,7 +107,7 @@ Examples ship in `Data/MAGE.lua` (long string) and `Data/HUNTER.lua` (`\n`).
 
 ### Classes included
 
-`Data/GENERAL.lua` registers shared trinket/racial templates onto every class. Per-class files: `WARRIOR`, `PALADIN`, `HUNTER`, `ROGUE`, `PRIEST`, `SHAMAN`, `MAGE`, `WARLOCK`, `DRUID` — Forever essentials from [`docs/MACROS.md`](docs/MACROS.md). Shared helpers live in `Data/SHARED.lua`. Curing/dispel templates: Druid Cure Key, Mage Remove Lesser Curse, Shaman Cure Poison/Disease, Priest Cure/Abolish Disease; Paladin uses existing Cleanse.
+`Data/GENERAL.lua` registers shared trinket/racial templates onto every class. Per-class files: `WARRIOR`, `PALADIN`, `HUNTER`, `ROGUE`, `PRIEST`, `SHAMAN`, `MAGE`, `WARLOCK`, `DRUID` — Forever essentials from [`docs/MACROS.md`](docs/MACROS.md). Shared helpers live in `Data/SHARED.lua` (trinkets + racial burst including Night Elf **Elune's Light**). Curing/dispel templates: Druid Cure Key, Mage Remove Lesser Curse, Shaman Cure Poison/Disease, Priest Cure/Abolish Disease; Paladin uses existing Cleanse. Castsequence openers (DoTs, Mark/Sting, Vigil/Shock, …) are listed under Cast sequences in [`docs/MACROS.md`](docs/MACROS.md).
 
 
 ### Race conditionals (`{IF:…}`)

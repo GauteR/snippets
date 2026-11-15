@@ -1,4 +1,6 @@
--- Forever hunter macros. Off-GCD High: pet commands.
+-- Forever hunter macros. Off-GCD High: pet commands, trinkets, racial burst.
+local S = Snippets.Shared
+
 Snippets.DB:Register("HUNTER", {
   id = "hunter_mark_pet",
   name = "Mark Pet",
@@ -56,4 +58,38 @@ Snippets.DB:Register("HUNTER", {
 ]],
   category = "pvp",
   note = "Flare at cursor",
+})
+
+Snippets.DB:Register("HUNTER", {
+  id = "hunter_mark_sting_seq",
+  name = "Mark Sting",
+  icon = "Ability_Hunter_SniperShot",
+  body = S.withBurstPrefix([[
+/petattack
+/castsequence reset=target Hunter's Mark, Serpent Sting
+]]),
+  category = "pve",
+  note = "Trinkets + racial burst + pet; Mark then Serpent Sting",
+})
+
+Snippets.DB:Register("HUNTER", {
+  id = "hunter_clip_kick_seq",
+  name = "Clip Kick",
+  icon = "Ability_Rogue_Trip",
+  body = [[
+/castsequence reset=6 Wing Clip, Strider Kick
+]],
+  category = "pve",
+  note = "Surv melee escape: Wing Clip then Strider Kick",
+})
+
+Snippets.DB:Register("HUNTER", {
+  id = "hunter_scatter_trap_seq",
+  name = "Scatter Trap",
+  icon = "Spell_Frost_Stun",
+  body = [[
+/castsequence reset=20 Scatter Shot, Freezing Trap
+]],
+  category = "pvp",
+  note = "Scatter Shot then Freezing Trap",
 })

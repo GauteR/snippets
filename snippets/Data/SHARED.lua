@@ -5,13 +5,10 @@ Snippets.Shared = Snippets.Shared or {}
 
 local S = Snippets.Shared
 
--- Off-GCD racial burst used in Forever racial+trinket macros (High confidence).
+-- Racial burst used in Forever racial+trinket macros.
+-- High: Blood Fury, Berserking, Eureka!. Unverified GCD: Elune's Light (Night Elf +10% crit; helps damage and heals).
 S.RACIAL_BURST_IF =
-  "{IF:ORC=/cast Blood Fury|TROLL=/cast Berserking|GNOME=/cast Eureka!}"
-
--- Utility racials for engage macros (not assumed off-GCD; IF drops unmatched races).
-S.RACIAL_DEFENSIVE_IF =
-  "{IF:DWARF=/cast Stoneform|GNOME=/cast Escape Artist|SCOURGE=/cast Will of the Forsaken|NIGHTELF=/cast Shadowmeld|HUMAN=/cast Will to Survive|TAUREN=/cast War Stomp}"
+  "{IF:ORC=/cast Blood Fury|TROLL=/cast Berserking|GNOME=/cast Eureka!|NIGHTELF=/cast Elune's Light}"
 
 -- On-use trinkets (High: no GCD per Forever macro guides).
 S.TRINKETS = "/use 13\n/use 14"
@@ -32,6 +29,15 @@ function S.join(...)
   end
   return table.concat(out, "\n")
 end
+
+-- Utility / defensive actives for engage macros (GCD Unverified; IF drops unmatched races).
+-- Two IF blocks so races with two actives (Human, Skyborne) can expand both.
+-- Skyborne UnitRace tokens Unverified (HIGHORDER / WINDSHAPER) — confirm with /dump UnitRace("player").
+-- Rapid Regeneration is omitted: channel cancelled by any action.
+S.RACIAL_DEFENSIVE_IF = S.join(
+  "{IF:DWARF=/cast Stoneform|GNOME=/cast Escape Artist|SCOURGE=/cast Will of the Forsaken|NIGHTELF=/cast Shadowmeld|HUMAN=/cast Will to Survive|TAUREN=/cast War Stomp|ORC=/cast Shatter Curse|HIGHORDER=/cast Walk on Air|WINDSHAPER=/cast Walk on Air}",
+  "{IF:HUMAN=/cast Perception|HIGHORDER=/cast Read Ley Line|WINDSHAPER=/cast Skysight}"
+)
 
 -- Trinkets + High racial burst, then the rest of the body (free cooldown first).
 function S.withBurstPrefix(body)

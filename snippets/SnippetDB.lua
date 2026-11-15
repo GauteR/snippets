@@ -142,12 +142,14 @@ function db:ExpandConditionals(body, raceFile)
   return expanded
 end
 
--- High-confidence off-GCD casts often prefixed before the bar spell; skip for tooltip icon.
--- Keep in sync with docs/forever-offgcd-research.md (High rows only).
+-- Off-GCD / burst casts often prefixed before the bar spell; skip for tooltip icon.
+-- High: Blood Fury, Berserking, Eureka!, Bloodrage, PoM, Inner Focus, NS, Fel Domination.
+-- Unverified GCD (still skipped when used as Shared burst prefix): Elune's Light.
 local TOOLTIP_SKIP_CASTS = {
   ["blood fury"] = true,
   ["berserking"] = true,
   ["eureka!"] = true,
+  ["elune's light"] = true,
   ["bloodrage"] = true,
   ["presence of mind"] = true,
   ["inner focus"] = true,
