@@ -369,7 +369,7 @@ eventFrame:SetScript("OnEvent", function(_, event)
     end
 
     Snippets:MaintainAll()
-    Print(Snippets:T("CHAT_LOADED"))
+    --Print(Snippets:T("CHAT_LOADED"))
     return
   end
 
@@ -394,4 +394,3 @@ eventFrame:SetScript("OnEvent", function(_, event)
     end
   end
 end)
-
