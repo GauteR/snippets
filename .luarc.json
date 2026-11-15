@@ -50,6 +50,7 @@
       "GameFontNormalLarge",
       "GameFontNormalSmall",
       "GameFontHighlightSmall",
+      "GameTooltip",
       "Settings",
       "SettingsPanel",
       "HideUIPanel",
