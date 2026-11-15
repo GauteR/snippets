@@ -2,13 +2,20 @@
 
 Local packaging uses [BigWigsMods/packager](https://github.com/BigWigsMods/packager) (`release.sh` **v2.7.0**, Forever-aware).
 
-## Prerequisites (Windows)
+## Prerequisites
 
-- Git for Windows (Git Bash; not the WSL `bash.exe` launcher)
-- `lua` on PATH (for unit tests), or pass `-SkipTests`
+**All platforms**
+
+- `bash`
+- `lua` on PATH (for unit tests), or pass `-SkipTests` / `--skip-tests`
 - `curl` (for upload)
 - `jq` on PATH when uploading (not required for dry-run)
-- Info-ZIP `zip` in Git Bash **or** Windows `tar.exe` (script falls back to `tar -a` automatically)
+- `zip`, or a zip fallback (`tar.exe -a` on Windows, `python3` on Unix)
+
+**Windows extras**
+
+- Prefer Git Bash for `./scripts/*.sh` (not the WSL `bash.exe` launcher)
+- PowerShell wrappers (`scripts/*.ps1`) are available as an alternative
 
 ## One-time setup
 
@@ -16,7 +23,7 @@ Local packaging uses [BigWigsMods/packager](https://github.com/BigWigsMods/packa
 2. Copy [`.release/.env.example`](../.release/.env.example) to `.release/.env` and add tokens when you are ready to upload:
    - `CF_API_TOKEN` — CurseForge
    - `WAGO_API_TOKEN` — Wago Addons  
-   `scripts/release.ps1` loads `.release/.env` (and optionally repo-root `.env`) into the process environment before calling `release.sh`. Do not commit either env file.
+   Both `scripts/release.ps1` and `scripts/release.sh` load `.release/.env` (and optionally repo-root `.env`) into the process environment before calling the packager. Do not commit either env file.
 3. When CurseForge / Wago projects exist, add these lines to [`snippets/snippets.toc`](../snippets/snippets.toc):
    - `## X-Curse-Project-ID: <id>`
    - `## X-Wago-ID: <id>`
@@ -42,7 +49,11 @@ Copy the working tree addon into Forever AddOns:
 .\scripts\publish-local.ps1
 ```
 
-Same test policy as release: requires `lua` on PATH unless you pass `-SkipTests`. See [`INSTALL.md`](INSTALL.md) for path overrides. This does **not** run packager or upload.
+```bash
+./scripts/publish-local.sh
+```
+
+Same test policy as release: requires `lua` on PATH unless you pass `-SkipTests` / `--skip-tests`. See [`INSTALL.md`](INSTALL.md) for path overrides. This does **not** run packager or upload.
 
 ## Commands
 
@@ -52,6 +63,9 @@ Dry-run (tests + zip, no upload):
 .\scripts\release.ps1 -DryRun
 ```
 
+```bash
+./scripts/release.sh --dry-run
+```
 
 Skip tests:
 
@@ -59,17 +73,30 @@ Skip tests:
 .\scripts\release.ps1 -DryRun -SkipTests
 ```
 
-Upload (requires `.env` tokens and real project IDs):
+```bash
+./scripts/release.sh --dry-run --skip-tests
+```
+
+Upload (requires token env files and real project IDs):
 
 ```powershell
 .\scripts\release.ps1
 ```
 
-Extra `release.sh` flags:
+```bash
+./scripts/release.sh
+```
+
+Extra packager flags:
 
 ```powershell
 .\scripts\release.ps1 -DryRun -ExtraArgs @("-g", "forever")
 ```
+
+```bash
+./scripts/release.sh --dry-run -- -g forever
+```
+
 
 ## What gets packaged
 

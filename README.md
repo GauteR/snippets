@@ -136,7 +136,11 @@ See `Data/WARRIOR.lua` (`warrior_charge`) for a fuller example.
 .\scripts\publish-local.ps1
 ```
 
-Copies `snippets/` into your Forever `Interface\AddOns` folder (auto-detects `D:\World of Warcraft\_forever_\…` when present). Override with `-Destination`, `SNIPPETS_FOREVER_ADDONS`, or `scripts/forever-addons.path`. Then `/reload` in-game.
+```bash
+./scripts/publish-local.sh
+```
+
+Copies `snippets/` into your Forever `Interface\AddOns` folder (auto-detects common Forever paths when present). Override with `-Destination` / `--destination`, `SNIPPETS_FOREVER_ADDONS`, or `scripts/forever-addons.path`. Then `/reload` in-game.
 
 ## Release (local)
 
@@ -144,7 +148,11 @@ Copies `snippets/` into your Forever `Interface\AddOns` folder (auto-detects `D:
 .\scripts\release.ps1 -DryRun
 ```
 
-Requires Git Bash and `lua` on PATH. See [`docs/RELEASE.md`](docs/RELEASE.md). Add `X-Curse-Project-ID` / `X-Wago-ID` to the TOC only when those projects exist.
+```bash
+./scripts/release.sh --dry-run
+```
+
+Requires bash (Git Bash on Windows) and `lua` on PATH. See [`docs/RELEASE.md`](docs/RELEASE.md). Add `X-Curse-Project-ID` / `X-Wago-ID` to the TOC only when those projects exist.
 
 ## Project layout
 
@@ -158,7 +166,10 @@ snippets/                 # Addon folder (copy this to Interface/AddOns)
   Data/*.lua              # Per-class templates (may include {IF:...} blocks)
 .pkgmeta                  # BigWigs packager ignore / package-as
 .release/release.sh       # Pinned BigWigs packager (v2.7.0)
-scripts/release.ps1       # Tests + package (+ optional upload)
+scripts/release.ps1       # Tests + package (+ optional upload) — Windows
+scripts/release.sh        # Same as release.ps1 — bash / Git Bash / macOS / Linux
+scripts/publish-local.ps1 # Copy addon into local Forever AddOns
+scripts/publish-local.sh  # Same as publish-local.ps1 — bash
 docs/INSTALL.md           # Short install guide
 docs/RELEASE.md           # Release instructions
 tests/test_snippet_db.lua # Unit tests (no WoW client required)

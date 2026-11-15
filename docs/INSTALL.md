@@ -20,7 +20,11 @@ Copy the addon into your local Forever AddOns folder:
 .\scripts\publish-local.ps1
 ```
 
-Optional: `-Destination "D:\World of Warcraft\_forever_\Interface\AddOns"`, or set `SNIPPETS_FOREVER_ADDONS`, or copy `scripts/forever-addons.path.example` to `scripts/forever-addons.path`.
+```bash
+./scripts/publish-local.sh
+```
+
+Optional: `-Destination` / `--destination "…\Interface\AddOns"`, or set `SNIPPETS_FOREVER_ADDONS`, or copy `scripts/forever-addons.path.example` to `scripts/forever-addons.path`.
 
 Then `/reload` in-game.
 
