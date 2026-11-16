@@ -4,15 +4,16 @@
   Run unit tests, then package Snippets with BigWigs release.sh (optional upload).
 
 .PARAMETER DryRun
-  Skip CurseForge/Wago/GitHub upload (passes -d to release.sh).
+  Skip CurseForge/Wago upload and GitHub release (passes -d to release.sh).
 
 .PARAMETER SkipTests
-  Skip lua tests/test_snippet_db.lua.
+  Skip lua unit tests.
 
 .PARAMETER ExtraArgs
   Extra arguments forwarded to release.sh.
 
-  Non-dry-run ensures annotated tag v{Config.VERSION} on HEAD and pushes it to origin.
+  Non-dry-run ensures annotated tag v{Config.VERSION} on HEAD, pushes it to origin,
+  then creates a GitHub Release (gh) with --generate-notes and the forever zip asset.
 #>
 param(
   [switch]$DryRun,
@@ -22,8 +23,17 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+$PackageName = "snippets"
+$ConfigPathRel = "snippets\Config.lua"
+$script:ReleaseVersion = $null
 $RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 Set-Location $RepoRoot
+
+# BigWigs packager requires a .git directory; linked worktrees use a .git file.
+$gitEntry = Join-Path $RepoRoot ".git"
+if ((Test-Path $gitEntry) -and -not (Test-Path $gitEntry -PathType Container)) {
+  Write-Error "Run release from the primary git checkout, not a linked worktree (packager needs a .git directory)."
+}
 
 function ConvertTo-GitBashPath([string]$WinPath) {
   $full = (Resolve-Path $WinPath).Path
@@ -125,6 +135,55 @@ function Import-DotEnv([string]$Path) {
   return $true
 }
 
+function Clear-PackagerGitHubTokens {
+  foreach ($name in @("GH_API_TOKEN", "GITHUB_API_TOKEN", "GITHUB_OAUTH")) {
+    [Environment]::SetEnvironmentVariable($name, $null, "Process")
+  }
+}
+
+function Find-ReleaseZip {
+  param(
+    [string]$PackageName,
+    [string]$Version
+  )
+  $labeled = if ($Version -match '^[vV]') { $Version } else { "v$Version" }
+  $preferred = Join-Path (Join-Path $RepoRoot ".release") "$PackageName-$labeled-forever.zip"
+  if (Test-Path $preferred) { return $preferred }
+  $zipMatches = @(Get-ChildItem (Join-Path $RepoRoot ".release\$PackageName-*.zip") -ErrorAction SilentlyContinue)
+  if ($zipMatches.Count -gt 0) { return $zipMatches[0].FullName }
+  return $null
+}
+
+function New-GitHubRelease {
+  param(
+    [string]$PackageName,
+    [string]$Version
+  )
+  $tag = "v$Version"
+  $gh = Get-Command gh -ErrorAction SilentlyContinue
+  if (-not $gh) {
+    Write-Error "gh not found on PATH. Install GitHub CLI (https://cli.github.com/) and run gh auth login."
+  }
+  $zipPath = Find-ReleaseZip -PackageName $PackageName -Version $Version
+  if (-not $zipPath) {
+    Write-Error "No release zip found under .release/ for $PackageName"
+  }
+  Write-Host "==> GitHub release $tag with $(Split-Path -Leaf $zipPath)"
+  & gh release view $tag 1>$null 2>$null
+  if ($LASTEXITCODE -eq 0) {
+    Write-Host "==> Release $tag already exists; uploading asset"
+    & gh release upload $tag $zipPath --clobber
+    if ($LASTEXITCODE -ne 0) {
+      Write-Error "gh release upload failed (exit $LASTEXITCODE)."
+    }
+  } else {
+    & gh release create $tag --title $tag --generate-notes $zipPath
+    if ($LASTEXITCODE -ne 0) {
+      Write-Error "gh release create failed (exit $LASTEXITCODE)."
+    }
+  }
+}
+
 # release.sh only auto-loads $topdir/.env; also support .release/.env via this wrapper.
 $loadedReleaseEnv = Import-DotEnv (Join-Path $RepoRoot ".release\.env")
 $loadedRootEnv = Import-DotEnv (Join-Path $RepoRoot ".env")
@@ -143,6 +202,7 @@ function Ensure-VersionTag([string]$ConfigPath) {
   }
   $version = $Matches[1].Trim()
   $tag = "v$version"
+  $script:ReleaseVersion = $version
   # Avoid piping git into Out-Null — that can drop a reliable $LASTEXITCODE.
   & git show-ref --tags --verify --quiet "refs/tags/$tag"
   if ($LASTEXITCODE -eq 0) {
@@ -172,9 +232,11 @@ if (-not $SkipTests) {
     Write-Error "lua not found on PATH. Install a Lua interpreter or pass -SkipTests."
   }
   Write-Host "==> Running tests"
-  & lua "tests/test_snippet_db.lua"
-  if ($LASTEXITCODE -ne 0) {
-    Write-Error "Tests failed (exit $LASTEXITCODE)."
+  foreach ($test in @("test_snippet_db.lua", "test_release_meta.lua")) {
+    & lua "tests/$test"
+    if ($LASTEXITCODE -ne 0) {
+      Write-Error "Tests failed ($test exit $LASTEXITCODE)."
+    }
   }
 }
 
@@ -194,8 +256,10 @@ $argList = @()
 if ($DryRun) {
   $argList += "-d"
 } else {
-  Ensure-VersionTag (Join-Path $RepoRoot "snippets\Config.lua")
+  Ensure-VersionTag (Join-Path $RepoRoot $ConfigPathRel)
 }
+# Wrapper owns GitHub releases via gh; prevent packager duplicate upload_github.
+Clear-PackagerGitHubTokens
 if ($useFallbackZip) {
   Write-Host "==> zip not found in Git Bash; packager will skip zip (-z), then Python/Compress-Archive will create a real ZIP"
   $argList += "-z"
@@ -212,9 +276,9 @@ if ($LASTEXITCODE -ne 0) {
   Write-Error "release.sh failed (exit $LASTEXITCODE)."
 }
 
-$packageDir = Join-Path $RepoRoot ".release\snippets"
-if (-not (Test-Path (Join-Path $packageDir "snippets.toc"))) {
-  Write-Error "Expected packaged TOC at .release/snippets/snippets.toc"
+$packageDir = Join-Path $RepoRoot ".release\$PackageName"
+if (-not (Test-Path (Join-Path $packageDir "$PackageName.toc"))) {
+  Write-Error "Expected packaged TOC at .release/$PackageName/$PackageName.toc"
 }
 $forbidden = @("docs", "tests", "scripts")
 foreach ($name in $forbidden) {
@@ -224,15 +288,29 @@ foreach ($name in $forbidden) {
 }
 
 if ($useFallbackZip) {
-  $toc = Get-Content (Join-Path $packageDir "snippets.toc") -Raw
+  $toc = Get-Content (Join-Path $packageDir "$PackageName.toc") -Raw
   $version = "unknown"
   if ($toc -match '(?m)^## Version:\s*(.+)\s*$') {
     $version = $Matches[1].Trim()
   }
-  $zipName = "snippets-$version-forever.zip"
+  $labeled = if ($version -match '^[vV]') { $version } else { "v$version" }
+  $zipName = "$PackageName-$labeled-forever.zip"
   $zipPath = Join-Path (Join-Path $RepoRoot ".release") $zipName
   Write-Host "==> Creating $zipName (real ZIP fallback)"
   New-ReleaseZip -PackageDir $packageDir -ZipPath $zipPath
+}
+
+if (-not $DryRun) {
+  if (-not $script:ReleaseVersion) {
+    $raw = Get-Content (Join-Path $RepoRoot $ConfigPathRel) -Raw
+    if ($raw -match '(?m)^\s*VERSION\s*=\s*"([^"]+)"') {
+      $script:ReleaseVersion = $Matches[1].Trim()
+    }
+  }
+  if (-not $script:ReleaseVersion) {
+    Write-Error "Could not resolve release version for GitHub release."
+  }
+  New-GitHubRelease -PackageName $PackageName -Version $script:ReleaseVersion
 }
 
 Write-Host "==> Done. Artifacts are under .release/"

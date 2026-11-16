@@ -138,7 +138,7 @@ See `Data/WARRIOR.lua` (`warrior_charge_intercept`) for a fuller example.
 | Doc | Contents |
 | --- | --- |
 | [`docs/INSTALL.md`](docs/INSTALL.md) | Short install guide |
-| [`docs/RELEASE.md`](docs/RELEASE.md) | Local packager / CurseForge–Wago release |
+| [`docs/RELEASE.md`](docs/RELEASE.md) | Local packager / GitHub Release (`gh`) / CurseForge–Wago |
 | [`docs/CURSEFORGE.md`](docs/CURSEFORGE.md) | User-facing CurseForge / Wago description (when published) |
 | [`docs/MACROS.md`](docs/MACROS.md) | Forever-first common macros (general + all classes) |
 | [`docs/forever-offgcd-research.md`](docs/forever-offgcd-research.md) | Off-GCD stacking research for Forever |
@@ -185,8 +185,9 @@ snippets/                 # Addon folder (copy this to Interface/AddOns)
 
 .pkgmeta                  # BigWigs packager ignore / package-as
 .release/release.sh       # Pinned BigWigs packager (v2.7.0)
-scripts/release.ps1       # Tests + package (+ optional upload) — Windows
+scripts/release.ps1       # Tests + package + tag/gh release (+ optional CF/Wago) — Windows
 scripts/release.sh        # Same as release.ps1 — bash / Git Bash / macOS / Linux
+scripts/release_meta.lua  # Tag/zip naming helpers (tested)
 scripts/publish-local.ps1 # Copy addon into local Forever AddOns
 scripts/publish-local.sh  # Same as publish-local.ps1 — bash
 docs/INSTALL.md           # Short install guide
