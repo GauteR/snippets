@@ -1,4 +1,4 @@
-#Requires -Version 5.1
+﻿#Requires -Version 5.1
 <#
 .SYNOPSIS
   Run unit tests, then package Snippets with BigWigs release.sh (optional upload).
@@ -11,6 +11,8 @@
 
 .PARAMETER ExtraArgs
   Extra arguments forwarded to release.sh.
+
+  Non-dry-run creates annotated tag v{Config.VERSION} on HEAD when missing.
 #>
 param(
   [switch]$DryRun,
@@ -106,6 +108,35 @@ if ($loadedReleaseEnv -or $loadedRootEnv) {
   Write-Host "==> Loaded local token env file(s)"
 }
 
+# Create annotated v{Config.VERSION} on HEAD when missing (real releases only).
+function Ensure-VersionTag([string]$ConfigPath) {
+  if (-not (Test-Path $ConfigPath)) {
+    Write-Error "Missing Config.lua at $ConfigPath"
+  }
+  $raw = Get-Content $ConfigPath -Raw
+  if ($raw -notmatch '(?m)^\s*VERSION\s*=\s*"([^"]+)"') {
+    Write-Error "Could not resolve Config.VERSION from $ConfigPath"
+  }
+  $version = $Matches[1].Trim()
+  $tag = "v$version"
+  # Avoid piping git into Out-Null — that can drop a reliable $LASTEXITCODE.
+  & git show-ref --tags --verify --quiet "refs/tags/$tag"
+  if ($LASTEXITCODE -eq 0) {
+    $tagCommit = (git rev-list -n 1 $tag).Trim()
+    $headCommit = (git rev-parse HEAD).Trim()
+    if ($tagCommit -ne $headCommit) {
+      Write-Error "Tag $tag exists but does not point at HEAD ($tagCommit vs $headCommit)."
+    }
+    Write-Host "==> Tag $tag already on HEAD"
+    return
+  }
+  Write-Host "==> Creating annotated tag $tag from Config.VERSION"
+  git tag -a $tag -m $tag
+  if ($LASTEXITCODE -ne 0) {
+    Write-Error "Failed to create tag $tag (exit $LASTEXITCODE)."
+  }
+}
+
 if (-not $SkipTests) {
   $lua = Get-Command lua -ErrorAction SilentlyContinue
   if (-not $lua) {
@@ -131,7 +162,11 @@ if (-not (Test-Path $releaseSh)) {
 $unixRoot = ConvertTo-GitBashPath $RepoRoot
 $useTarZip = -not (Test-GitBashHasZip $bash)
 $argList = @()
-if ($DryRun) { $argList += "-d" }
+if ($DryRun) {
+  $argList += "-d"
+} else {
+  Ensure-VersionTag (Join-Path $RepoRoot "snippets\Config.lua")
+}
 if ($useTarZip) {
   Write-Host "==> zip not found in Git Bash; packager will skip zip (-z), then tar.exe will create it"
   $argList += "-z"
