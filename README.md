@@ -238,4 +238,4 @@ Coverage includes class filtering, PvE/PvP category filtering, unique macro name
 
 ## License
 
-Personal / project use unless otherwise stated by the repository owner.
+[MIT](LICENSE) © 2026 GauteR
