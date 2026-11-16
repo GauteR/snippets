@@ -5,6 +5,8 @@
 #   ./scripts/release.sh --dry-run
 #   ./scripts/release.sh --skip-tests --dry-run
 #   ./scripts/release.sh -- [extra release.sh args...]
+#
+# Non-dry-run creates annotated tag v{Config.VERSION} on HEAD when missing.
 set -euo pipefail
 
 DRY_RUN=0
@@ -65,6 +67,34 @@ if [[ $loaded -eq 1 ]]; then
   echo "==> Loaded local token env file(s)"
 fi
 
+# Create annotated v{Config.VERSION} on HEAD when missing (real releases only).
+ensure_version_tag() {
+  local config_path="$1"
+  local version tag tag_commit head_commit
+  if [[ ! -f "$config_path" ]]; then
+    echo "Missing Config.lua at $config_path" >&2
+    exit 1
+  fi
+  version="$(sed -nE 's/^[[:space:]]*VERSION[[:space:]]*=[[:space:]]*"([^"]+)".*/\1/p' "$config_path" | head -n 1)"
+  if [[ -z "$version" ]]; then
+    echo "Could not resolve Config.VERSION from $config_path" >&2
+    exit 1
+  fi
+  tag="v${version}"
+  if git rev-parse -q --verify "refs/tags/${tag}" >/dev/null; then
+    tag_commit="$(git rev-list -n 1 "$tag")"
+    head_commit="$(git rev-parse HEAD)"
+    if [[ "$tag_commit" != "$head_commit" ]]; then
+      echo "Tag $tag exists but does not point at HEAD ($tag_commit vs $head_commit)." >&2
+      exit 1
+    fi
+    echo "==> Tag $tag already on HEAD"
+    return 0
+  fi
+  echo "==> Creating annotated tag $tag from Config.VERSION"
+  git tag -a "$tag" -m "$tag"
+}
+
 if [[ $SKIP_TESTS -eq 0 ]]; then
   if ! command -v lua >/dev/null 2>&1; then
     echo "lua not found on PATH. Install a Lua interpreter or pass --skip-tests." >&2
@@ -83,6 +113,8 @@ fi
 PACKAGER_ARGS=()
 if [[ $DRY_RUN -eq 1 ]]; then
   PACKAGER_ARGS+=(-d)
+else
+  ensure_version_tag "$REPO_ROOT/snippets/Config.lua"
 fi
 
 USE_FALLBACK_ZIP=0

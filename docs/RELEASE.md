@@ -35,11 +35,15 @@ Until those IDs exist, omit the lines (dry-run packaging still works; upload nee
 Packager reads the version from an **annotated git tag** on HEAD (for example `v1.1.0`).  
 `## Version: @project-version@` in the TOC is replaced at package time.
 
+Bump `Config.VERSION` before a real release. `scripts/release.sh` / `scripts/release.ps1` create annotated tag `v{Config.VERSION}` on HEAD when that tag is missing (skipped for `--dry-run` / `-DryRun`). Tags are not pushed automatically.
+
+Manual equivalent:
+
 ```powershell
 git tag -a v1.1.0 -m "v1.1.0"
 ```
 
-Untagged HEAD builds are treated as alpha by packager.
+If the tag already exists on another commit, release fails. Untagged HEAD builds (including dry-run without a prior tag) are treated as alpha by packager.
 
 ## Local in-game test (not a release)
 
