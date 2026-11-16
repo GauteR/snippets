@@ -10,7 +10,7 @@ Local packaging uses [BigWigsMods/packager](https://github.com/BigWigsMods/packa
 - `lua` on PATH (for unit tests), or pass `-SkipTests` / `--skip-tests`
 - `curl` (for upload)
 - `jq` on PATH when uploading (not required for dry-run)
-- `zip`, or a zip fallback (`tar.exe -a` on Windows, `python3` on Unix)
+- `zip` on PATH, or Python (`python`/`python3`) as fallback for a real ZIP (do not use Windows `tar.exe -a`)
 
 **Windows extras**
 
