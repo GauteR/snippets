@@ -65,13 +65,37 @@ function New-ReleaseZip {
   if (Test-Path $ZipPath) { Remove-Item -Force $ZipPath }
   $parent = Split-Path -Parent $PackageDir
   $name = Split-Path -Leaf $PackageDir
-  # Windows tar creates zip archives without requiring Info-ZIP.
+
+  # Real ZIP only. Windows tar.exe -a often writes a tar stream named *.zip;
+  # CurseForge then rejects uploads ("Failed to verify archive").
+  $zipCmd = Get-Command zip -ErrorAction SilentlyContinue
+  if ($zipCmd) {
+    Push-Location $parent
+    try {
+      & zip -r $ZipPath $name
+      if ($LASTEXITCODE -ne 0) {
+        Write-Error "zip failed to create $ZipPath (exit $LASTEXITCODE)."
+      }
+    }
+    finally {
+      Pop-Location
+    }
+    return
+  }
+
+  $py = Get-Command python -ErrorAction SilentlyContinue
+  if (-not $py) { $py = Get-Command python3 -ErrorAction SilentlyContinue }
+  if ($py) {
+    & $py.Source -c "import sys; from pathlib import Path; import shutil; parent, name, zip_path = sys.argv[1:4]; shutil.make_archive(str(Path(zip_path).with_suffix('')), 'zip', root_dir=parent, base_dir=name)" $parent $name $ZipPath
+    if ($LASTEXITCODE -ne 0) {
+      Write-Error "python failed to create $ZipPath (exit $LASTEXITCODE)."
+    }
+    return
+  }
+
   Push-Location $parent
   try {
-    & tar.exe -a -cf $ZipPath $name
-    if ($LASTEXITCODE -ne 0) {
-      Write-Error "tar failed to create $ZipPath (exit $LASTEXITCODE)."
-    }
+    Compress-Archive -Path $name -DestinationPath $ZipPath -Force
   }
   finally {
     Pop-Location
@@ -129,11 +153,11 @@ if (-not (Test-Path $releaseSh)) {
 }
 
 $unixRoot = ConvertTo-GitBashPath $RepoRoot
-$useTarZip = -not (Test-GitBashHasZip $bash)
+$useFallbackZip = -not (Test-GitBashHasZip $bash)
 $argList = @()
 if ($DryRun) { $argList += "-d" }
-if ($useTarZip) {
-  Write-Host "==> zip not found in Git Bash; packager will skip zip (-z), then tar.exe will create it"
+if ($useFallbackZip) {
+  Write-Host "==> zip not found in Git Bash; packager will skip zip (-z), then Python/Compress-Archive will create a real ZIP"
   $argList += "-z"
 }
 if ($ExtraArgs) { $argList += $ExtraArgs }
@@ -159,7 +183,7 @@ foreach ($name in $forbidden) {
   }
 }
 
-if ($useTarZip) {
+if ($useFallbackZip) {
   $toc = Get-Content (Join-Path $packageDir "snippets.toc") -Raw
   $version = "unknown"
   if ($toc -match '(?m)^## Version:\s*(.+)\s*$') {
@@ -167,7 +191,7 @@ if ($useTarZip) {
   }
   $zipName = "snippets-$version-forever.zip"
   $zipPath = Join-Path (Join-Path $RepoRoot ".release") $zipName
-  Write-Host "==> Creating $zipName with tar.exe"
+  Write-Host "==> Creating $zipName (real ZIP fallback)"
   New-ReleaseZip -PackageDir $packageDir -ZipPath $zipPath
 }
 
