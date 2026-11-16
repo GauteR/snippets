@@ -6,7 +6,7 @@
 #   ./scripts/release.sh --skip-tests --dry-run
 #   ./scripts/release.sh -- [extra release.sh args...]
 #
-# Non-dry-run creates annotated tag v{Config.VERSION} on HEAD when missing.
+# Non-dry-run ensures annotated tag v{Config.VERSION} on HEAD and pushes it to origin.
 set -euo pipefail
 
 DRY_RUN=0
@@ -67,7 +67,7 @@ if [[ $loaded -eq 1 ]]; then
   echo "==> Loaded local token env file(s)"
 fi
 
-# Create annotated v{Config.VERSION} on HEAD when missing (real releases only).
+# Ensure annotated v{Config.VERSION} on HEAD and push to origin (real releases only).
 ensure_version_tag() {
   local config_path="$1"
   local version tag tag_commit head_commit
@@ -89,10 +89,12 @@ ensure_version_tag() {
       exit 1
     fi
     echo "==> Tag $tag already on HEAD"
-    return 0
+  else
+    echo "==> Creating annotated tag $tag from Config.VERSION"
+    git tag -a "$tag" -m "$tag"
   fi
-  echo "==> Creating annotated tag $tag from Config.VERSION"
-  git tag -a "$tag" -m "$tag"
+  echo "==> Pushing tag $tag to origin"
+  git push origin "refs/tags/${tag}"
 }
 
 if [[ $SKIP_TESTS -eq 0 ]]; then

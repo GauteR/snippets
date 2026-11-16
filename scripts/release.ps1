@@ -12,7 +12,7 @@
 .PARAMETER ExtraArgs
   Extra arguments forwarded to release.sh.
 
-  Non-dry-run creates annotated tag v{Config.VERSION} on HEAD when missing.
+  Non-dry-run ensures annotated tag v{Config.VERSION} on HEAD and pushes it to origin.
 #>
 param(
   [switch]$DryRun,
@@ -132,7 +132,7 @@ if ($loadedReleaseEnv -or $loadedRootEnv) {
   Write-Host "==> Loaded local token env file(s)"
 }
 
-# Create annotated v{Config.VERSION} on HEAD when missing (real releases only).
+# Ensure annotated v{Config.VERSION} on HEAD and push to origin (real releases only).
 function Ensure-VersionTag([string]$ConfigPath) {
   if (-not (Test-Path $ConfigPath)) {
     Write-Error "Missing Config.lua at $ConfigPath"
@@ -152,12 +152,17 @@ function Ensure-VersionTag([string]$ConfigPath) {
       Write-Error "Tag $tag exists but does not point at HEAD ($tagCommit vs $headCommit)."
     }
     Write-Host "==> Tag $tag already on HEAD"
-    return
+  } else {
+    Write-Host "==> Creating annotated tag $tag from Config.VERSION"
+    git tag -a $tag -m $tag
+    if ($LASTEXITCODE -ne 0) {
+      Write-Error "Failed to create tag $tag (exit $LASTEXITCODE)."
+    }
   }
-  Write-Host "==> Creating annotated tag $tag from Config.VERSION"
-  git tag -a $tag -m $tag
+  Write-Host "==> Pushing tag $tag to origin"
+  git push origin "refs/tags/$tag"
   if ($LASTEXITCODE -ne 0) {
-    Write-Error "Failed to create tag $tag (exit $LASTEXITCODE)."
+    Write-Error "Failed to push tag $tag (exit $LASTEXITCODE)."
   }
 }
 
