@@ -117,11 +117,11 @@ else
   ensure_version_tag "$REPO_ROOT/snippets/Config.lua"
 fi
 
-USE_TAR_ZIP=0
+USE_FALLBACK_ZIP=0
 if ! command -v zip >/dev/null 2>&1; then
-  echo "==> zip not found; packager will skip zip (-z), then archive fallback will create it"
+  echo "==> zip not found; packager will skip zip (-z), then Python will create a real ZIP"
   PACKAGER_ARGS+=(-z)
-  USE_TAR_ZIP=1
+  USE_FALLBACK_ZIP=1
 fi
 if [[ ${#EXTRA_ARGS[@]} -gt 0 ]]; then
   PACKAGER_ARGS+=("${EXTRA_ARGS[@]}")
@@ -145,7 +145,7 @@ done
 make_zip() {
   local package_dir="$1"
   local zip_path="$2"
-  local parent name
+  local parent name py
   parent="$(dirname "$package_dir")"
   name="$(basename "$package_dir")"
   rm -f "$zip_path"
@@ -155,27 +155,25 @@ make_zip() {
       zip -r "$zip_path" "$name"
       return 0
     fi
-    # Windows tar.exe supports auto format from the .zip extension via -a.
-    if command -v tar.exe >/dev/null 2>&1; then
-      tar.exe -a -cf "$zip_path" "$name"
-      return 0
-    fi
-    if command -v python3 >/dev/null 2>&1; then
-      python3 - "$name" "$zip_path" <<'PY'
+    # Real ZIP via Python. Do not use Windows tar.exe -a (fake .zip / CurseForge reject).
+    for py in python3 python; do
+      if command -v "$py" >/dev/null 2>&1; then
+        "$py" - "$name" "$zip_path" <<'PY'
 import sys, shutil
 from pathlib import Path
 folder, zip_path = sys.argv[1], Path(sys.argv[2])
 base = zip_path.with_suffix("")
 shutil.make_archive(str(base), "zip", root_dir=".", base_dir=folder)
 PY
-      return 0
-    fi
-    echo "Need zip, tar.exe, or python3 to create $zip_path" >&2
+        return 0
+      fi
+    done
+    echo "Need zip or python3/python to create a real ZIP at $zip_path" >&2
     exit 1
   )
 }
 
-if [[ $USE_TAR_ZIP -eq 1 ]]; then
+if [[ $USE_FALLBACK_ZIP -eq 1 ]]; then
   version="$(awk -F': ' '/^## Version:/{print $2; exit}' "$PACKAGE_DIR/snippets.toc" | tr -d '\r')"
   version="${version:-unknown}"
   zip_name="snippets-${version}-forever.zip"
