@@ -35,7 +35,7 @@ Until those IDs exist, omit the lines (dry-run packaging still works; upload nee
 Packager reads the version from an **annotated git tag** on HEAD (for example `v1.1.0`).  
 `## Version: @project-version@` in the TOC is replaced at package time.
 
-Bump `Config.VERSION` before a real release. `scripts/release.sh` / `scripts/release.ps1` create annotated tag `v{Config.VERSION}` on HEAD when that tag is missing (skipped for `--dry-run` / `-DryRun`). Tags are not pushed automatically.
+Bump `Config.VERSION` before a real release. `scripts/release.sh` / `scripts/release.ps1` create annotated tag `v{Config.VERSION}` on HEAD when that tag is missing, then push it to `origin` (skipped for `--dry-run` / `-DryRun`).
 
 Manual equivalent:
 
