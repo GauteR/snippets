@@ -5,11 +5,11 @@ Snippets.DB:Register("WARRIOR", {
   id = "warrior_charge_intercept",
   name = "Charge Intercept",
   icon = "Ability_Warrior_Charge",
-  body = S.join([[
+  body = [[
 /cast [nocombat,nostance:1] Battle Stance; [nocombat] Charge; [nostance:3] Berserker Stance; Intercept
-]], S.RACIAL_DEFENSIVE_IF),
+]],
   category = "general",
-  note = "Stance swap may need a second press; defensive racial via {IF}",
+  note = "Stance swap may need a second press",
 })
 
 Snippets.DB:Register("WARRIOR", {
@@ -73,3 +73,16 @@ Snippets.DB:Register("WARRIOR", {
   note = "Trinkets + racial + Bloodrage; Rend then Heroic Strike, reset combat",
 })
 
+Snippets.DB:Register("WARRIOR", {
+  id = "warrior_bloodrage_charge_victory_rush",
+  name = "Bloodrage and charge into combat",
+  icon = "Ability_Warrior_Charge",
+  body = S.withBurstPrefix([[
+/cast Bloodrage
+/cast [nocombat,nostance:1] Battle Stance; [nocombat] Charge; [nostance:3] Berserker Stance; Intercept
+/startattack
+/cast Victory Rush
+]]),
+  category = "pve",
+  note = "racial + Bloodrage; Charge then Victory Rush",
+})
