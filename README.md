@@ -139,6 +139,7 @@ See `Data/WARRIOR.lua` (`warrior_charge_intercept`) for a fuller example.
 | --- | --- |
 | [`docs/INSTALL.md`](docs/INSTALL.md) | Short install guide |
 | [`docs/RELEASE.md`](docs/RELEASE.md) | Local packager / GitHub Release (`gh`) / CurseForge–Wago |
+| [`CHANGELOG.md`](CHANGELOG.md) | Keep a Changelog (CurseForge webhook + release notes) |
 | [`docs/CURSEFORGE.md`](docs/CURSEFORGE.md) | User-facing CurseForge / Wago description (when published) |
 | [`docs/MACROS.md`](docs/MACROS.md) | Forever-first common macros (general + all classes) |
 | [`docs/forever-offgcd-research.md`](docs/forever-offgcd-research.md) | Off-GCD stacking research for Forever |
@@ -191,6 +192,7 @@ scripts/release_meta.lua  # Tag/zip naming helpers (tested)
 scripts/publish-local.ps1 # Copy addon into local Forever AddOns
 scripts/publish-local.sh  # Same as publish-local.ps1 — bash
 docs/INSTALL.md           # Short install guide
+CHANGELOG.md              # Keep a Changelog (CurseForge webhook)
 docs/RELEASE.md           # Release instructions
 tests/test_snippet_db.lua # Unit tests (no WoW client required)
 .luarc.json               # LuaLS WoW globals

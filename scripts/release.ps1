@@ -12,8 +12,9 @@
 .PARAMETER ExtraArgs
   Extra arguments forwarded to release.sh.
 
-  Non-dry-run ensures annotated tag v{Config.VERSION} on HEAD, pushes it to origin,
-  then creates a GitHub Release (gh) with --generate-notes and the forever zip asset.
+  Non-dry-run updates CHANGELOG.md from commits, commits it when needed, ensures
+  annotated tag v{Config.VERSION} on HEAD, pushes it to origin, then creates a
+  GitHub Release (gh) with notes from CHANGELOG.md and the forever zip asset.
 #>
 param(
   [switch]$DryRun,
@@ -25,7 +26,9 @@ param(
 $ErrorActionPreference = "Stop"
 $PackageName = "snippets"
 $ConfigPathRel = "snippets\Config.lua"
+$ChangelogPathRel = "CHANGELOG.md"
 $script:ReleaseVersion = $null
+$script:ChangelogNotesFile = $null
 $RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 Set-Location $RepoRoot
 
@@ -154,6 +157,73 @@ function Find-ReleaseZip {
   return $null
 }
 
+function Get-ConfigVersion([string]$ConfigPath) {
+  if (-not (Test-Path $ConfigPath)) {
+    Write-Error "Missing Config.lua at $ConfigPath"
+  }
+  $raw = Get-Content $ConfigPath -Raw
+  if ($raw -notmatch '(?m)^\s*VERSION\s*=\s*"([^"]+)"') {
+    Write-Error "Could not resolve Config.VERSION from $ConfigPath"
+  }
+  return $Matches[1].Trim()
+}
+
+function Get-PreviousVersionTag([string]$CurrentTag) {
+  $tags = @(git tag -l "v*" --sort=-v:refname)
+  foreach ($tag in $tags) {
+    if ($tag -and $tag -ne $CurrentTag) {
+      return $tag
+    }
+  }
+  return $null
+}
+
+function Update-Changelog {
+  param(
+    [string]$Version,
+    [bool]$CommitChanges
+  )
+  $lua = Get-Command lua -ErrorAction SilentlyContinue
+  if (-not $lua) {
+    Write-Error "lua not found on PATH (required to update CHANGELOG.md)."
+  }
+  $dateUtc = [DateTime]::UtcNow.ToString("yyyy-MM-dd")
+  $notesFile = Join-Path ([System.IO.Path]::GetTempPath()) ("snippets-changelog-notes-" + [guid]::NewGuid().ToString("n") + ".md")
+  $subjectsFile = Join-Path ([System.IO.Path]::GetTempPath()) ("snippets-changelog-subjects-" + [guid]::NewGuid().ToString("n") + ".txt")
+  $script:ChangelogNotesFile = $notesFile
+  $prev = Get-PreviousVersionTag "v$Version"
+  if ($prev) {
+    $range = "$prev..HEAD"
+  } else {
+    $range = "HEAD"
+  }
+  Write-Host "==> Updating CHANGELOG.md for v$Version from $range"
+  # Avoid PowerShell UTF-8 BOM on subject files; write ASCII/UTF-8 without BOM.
+  $subjects = @(& git log $range --no-merges --pretty=format:%s)
+  $subjectText = ($subjects -join "`n") + "`n"
+  $utf8NoBom = New-Object System.Text.UTF8Encoding $false
+  [System.IO.File]::WriteAllText($subjectsFile, $subjectText, $utf8NoBom)
+  Get-Content -Path $subjectsFile -Raw | & lua (Join-Path $RepoRoot "scripts\update_changelog.lua") $Version $dateUtc (Join-Path $RepoRoot $ChangelogPathRel) --notes-out $notesFile
+  if ($LASTEXITCODE -ne 0) {
+    Write-Error "update_changelog.lua failed (exit $LASTEXITCODE)."
+  }
+  Remove-Item -Force $subjectsFile -ErrorAction SilentlyContinue
+  if ($CommitChanges) {
+    git add -- $ChangelogPathRel
+    & git diff --cached --quiet -- $ChangelogPathRel
+    if ($LASTEXITCODE -ne 0) {
+      # --only keeps other staged files out of this commit.
+      git commit --only -m "docs: update CHANGELOG for v$Version" -- $ChangelogPathRel
+      if ($LASTEXITCODE -ne 0) {
+        Write-Error "Failed to commit CHANGELOG.md (exit $LASTEXITCODE)."
+      }
+      Write-Host "==> Committed CHANGELOG.md"
+    } else {
+      Write-Host "==> CHANGELOG.md unchanged"
+    }
+  }
+}
+
 function New-GitHubRelease {
   param(
     [string]$PackageName,
@@ -177,7 +247,11 @@ function New-GitHubRelease {
       Write-Error "gh release upload failed (exit $LASTEXITCODE)."
     }
   } else {
-    & gh release create $tag --title $tag --generate-notes $zipPath
+    $notesArgs = @("--generate-notes")
+    if ($script:ChangelogNotesFile -and (Test-Path $script:ChangelogNotesFile)) {
+      $notesArgs = @("--notes-file", $script:ChangelogNotesFile)
+    }
+    & gh release create $tag --title $tag @notesArgs $zipPath
     if ($LASTEXITCODE -ne 0) {
       Write-Error "gh release create failed (exit $LASTEXITCODE)."
     }
@@ -193,14 +267,7 @@ if ($loadedReleaseEnv -or $loadedRootEnv) {
 
 # Ensure annotated v{Config.VERSION} on HEAD and push to origin (real releases only).
 function Ensure-VersionTag([string]$ConfigPath) {
-  if (-not (Test-Path $ConfigPath)) {
-    Write-Error "Missing Config.lua at $ConfigPath"
-  }
-  $raw = Get-Content $ConfigPath -Raw
-  if ($raw -notmatch '(?m)^\s*VERSION\s*=\s*"([^"]+)"') {
-    Write-Error "Could not resolve Config.VERSION from $ConfigPath"
-  }
-  $version = $Matches[1].Trim()
+  $version = Get-ConfigVersion $ConfigPath
   $tag = "v$version"
   $script:ReleaseVersion = $version
   # Avoid piping git into Out-Null — that can drop a reliable $LASTEXITCODE.
@@ -232,12 +299,19 @@ if (-not $SkipTests) {
     Write-Error "lua not found on PATH. Install a Lua interpreter or pass -SkipTests."
   }
   Write-Host "==> Running tests"
-  foreach ($test in @("test_snippet_db.lua", "test_release_meta.lua")) {
+  foreach ($test in @("test_snippet_db.lua", "test_release_meta.lua", "test_changelog_meta.lua")) {
     & lua "tests/$test"
     if ($LASTEXITCODE -ne 0) {
       Write-Error "Tests failed ($test exit $LASTEXITCODE)."
     }
   }
+}
+
+$script:ReleaseVersion = Get-ConfigVersion (Join-Path $RepoRoot $ConfigPathRel)
+if ($DryRun) {
+  Update-Changelog -Version $script:ReleaseVersion -CommitChanges $false
+} else {
+  Update-Changelog -Version $script:ReleaseVersion -CommitChanges $true
 }
 
 $bash = Find-Bash

@@ -4,6 +4,9 @@ package-as: snippets
 move-folders:
   snippets/snippets: snippets
 
+# CurseForge GitHub webhook reads CHANGELOG.md from repo root; packager uses it for upload notes.
+manual-changelog: CHANGELOG.md
+
 ignore:
   - docs
   - tests

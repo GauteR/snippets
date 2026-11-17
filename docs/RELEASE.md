@@ -37,14 +37,17 @@ Until those IDs exist, omit the lines (dry-run packaging still works; upload nee
 Packager reads the version from an **annotated git tag** on HEAD (for example `v1.1.0`).  
 `## Version: @project-version@` in the TOC is replaced at package time.
 
-Bump `Config.VERSION` before a real release. `scripts/release.sh` / `scripts/release.ps1` create annotated tag `v{Config.VERSION}` on HEAD when that tag is missing, then push it to `origin` (skipped for `--dry-run` / `-DryRun`).
+Bump `Config.VERSION` before a real release. `scripts/release.sh` / `scripts/release.ps1`:
 
-1. Create annotated tag `v{Config.VERSION}` on HEAD when missing
-2. Push the tag to `origin`
-3. Package the zip
-4. Create a GitHub Release for that tag with `gh release create --generate-notes` (commit changelog since the previous tag) and attach the forever zip; if the release already exists, upload the zip with `--clobber`
+1. Update root [`CHANGELOG.md`](../CHANGELOG.md) from git commits since the previous `v*` tag (Keep a Changelog; conventional commits map to Added/Fixed/Changed/…)
+2. On real release: commit `CHANGELOG.md` when it changed (`docs: update CHANGELOG for vX.Y.Z`)
+3. Create annotated tag `v{Config.VERSION}` on HEAD when missing, then push it to `origin`
+4. Package the zip (packager `manual-changelog: CHANGELOG.md` for CurseForge/Wago upload notes)
+5. Create a GitHub Release with notes from the new CHANGELOG section and attach the forever zip; if the release already exists, upload the zip with `--clobber`
 
-Skipped for `--dry-run` / `-DryRun`. Wrappers clear packager GitHub tokens so BigWigs `upload_github` does not create a duplicate release.
+Dry-run still rewrites `CHANGELOG.md` in the working tree for preview, but does not commit or tag. CurseForge GitHub webhooks read `CHANGELOG.md` from the repo root on the tagged commit — that is why the file is committed before the tag.
+
+Wrappers clear packager GitHub tokens so BigWigs `upload_github` does not create a duplicate release. `lua` is required for changelog updates even when tests are skipped.
 
 Manual tag equivalent:
 
@@ -123,3 +126,5 @@ Artifacts land under `.release/` (gitignored except `release.sh` and `.env.examp
 ## CurseForge description
 
 Paste [`docs/CURSEFORGE.md`](CURSEFORGE.md) (body below the horizontal rule) into the CurseForge project Description field when the project exists. That file is not included in the zip.
+
+Root [`CHANGELOG.md`](../CHANGELOG.md) is the changelog CurseForge reads from GitHub (webhook) and that packager uploads with `manual-changelog`. It stays listed under `.pkgmeta` `ignore` so it is not copied as addon content beyond changelog handling.
